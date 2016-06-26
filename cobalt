@@ -1,0 +1,219 @@
+cobalt = {
+	graphics = { },
+	filesystem = { },
+	event = { },
+	window = { },
+	_mainloop = true,
+	vars = {
+		backgroundcolour = colours.black,
+		textcolour = colours.white
+	},
+	keyboard = {
+		keysdown = { },
+	},
+	mouse = { },
+	table = { },
+	state = "MAIN",
+	updatetimer = os.startTimer( 0.1 ),
+	version = "1.0",
+}
+
+function cobalt.debug( item )
+	term.setBackgroundColour( colours.black )
+	term.setTextColour( colours.white )
+	term.clear()
+	term.setCursorPos( 1,1 )
+	print( "COBALT DEBUG" )
+	print( item )
+	cobalt.exit()
+end
+
+cobalt.g = cobalt.graphics
+cobalt.k = cobalt.keyboard
+cobalt.fs = cobalt.filesystem
+cobalt.e = cobalt.event
+cobalt.w = cobalt.window
+cobalt.m = cobalt.mouse
+
+local graphics_lighten = {
+	[32768] = colours.grey,
+	[128] = colours.lightGrey,
+	[256] = colours.white,
+	[1] = colours.white,
+
+	[2048] = colours.cyan,
+	[512] = colours.lightBlue,
+	[8] = colours.white,
+
+	[8192] = colours.lime,
+	[32] = colours.white,
+
+	[4096] = colours.orange,
+	[2] = colours.yellow,
+	[16] = colours.white,
+
+	[16384] = colours.pink,
+	[64] = colours.white,
+
+	[1024] = colours.magenta,
+	[4] = colours.white,
+
+}
+
+local graphics_darken = {
+
+}
+
+--[=[ GRAPHICS FUNCTIONS ]=]--
+function cobalt.graphics.print( text, x, y )
+	term.setCursorPos( x, y )
+	print( text )
+end
+function cobalt.graphics.write( text, x, y )
+	term.setCursorPos( x, y )
+	write( text )
+end
+function cobalt.graphics.rect( mode, x, y, w, h, colour )
+	if mode == "fill" then
+		paintutils.drawFilledBox( x, y, x+w, y+h, colour )
+	elseif mode == "line" then
+		paintutils.drawBox( x, y, x+w, y+h, colour )
+	end
+end
+cobalt.graphics.rectangle = cobalt.graphics.rect
+cobalt.graphics.pixel = paintutils.drawPixel
+function cobalt.graphics.line( x, y, a, b, colour )
+	paintutils.drawLine( x, y, a, b, colour )
+end
+
+--[=[function cobalt.graphics.setBackgroundColour( colour )
+	cobalt.vars.backgroundcolour = colour
+end--]=]
+cobalt.graphics.setBackgroundColour = term.setBackgroundColour
+
+--[=[function cobalt.graphics.setColour( colour )
+	cobalt.vars.textcolour = colour
+end--]=]
+cobalt.graphics.setColour = term.setTextColour
+
+function cobalt.graphics.lighten( colour )
+	return graphics_lighten[colour]
+end
+
+function cobalt.graphics.darken( colour )
+	return graphics_darken[colour]
+end
+
+
+--[=[WINDOW FUNCTIONS]=]--
+function cobalt.window.getWidth()
+	local x, _ = term.getSize()
+	return x
+end
+
+function cobalt.window.getHeight()
+	local _, y = term.getSize()
+	return y
+end
+
+
+--[=[KEYBOARD FUNCTIONS]=]--
+function cobalt._keypressed( key, keycode )
+	cobalt.keyboard.keysdown[key] = true
+	cobalt.keyboard.keysdown[keycode] = true
+
+	if cobalt.keypressed then cobalt.keypressed( key, keycode ) end
+end
+
+function cobalt._keyreleased( key, keycode )
+	cobalt.keyboard.keysdown[key] = nil
+	cobalt.keyboard.keysdown[keycode] = nil
+
+	if cobalt.keyreleased then cobalt.keyreleased( key, keycode ) end
+end
+
+function cobalt.keyboard.isDown( key )
+	if cobalt.keyboard.keysdown[key] then
+		return true
+	end
+	return false
+end
+
+--[=[STATE FUNCTIONS]=]--
+function cobalt.getState()
+	return cobalt.state
+end
+
+
+
+function deepcopy(t) -- deep-copy a table
+    if type(t) ~= "table" then return t end
+    local meta = getmetatable(t)
+    local target = {}
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            target[k] = deepcopy(v)
+        else
+            target[k] = v
+        end
+    end
+    setmetatable(target, meta)
+    return target
+end
+
+
+
+
+--[=[FILESYSTEM FUNCTIONS]=]--
+cobalt.filesystem.list = fs.list
+cobalt.filesystem.getDirectoryItems = fs.list
+cobalt.filesystem.isFile = fs.exists
+cobalt.filesystem.isDir = fs.isDir
+cobalt.filesystem.currentDir = shell.dir()
+
+cobalt.raw = false
+
+function cobalt.exit()
+	cobalt._mainloop = false
+	return
+end
+
+function cobalt._draw()
+	term.setBackgroundColour( cobalt.vars.backgroundcolour )
+	term.clear()
+	term.setCursorPos( 1, 1 )
+	term.setTextColour( cobalt.vars.textcolour )
+	cobalt.draw()
+end
+
+function cobalt.initLoop()
+	while cobalt._mainloop do
+
+		local e, a, b, c, d, e
+		if cobalt.raw then
+			e, a, b, c, d, e = os.pullEventRaw()
+		else
+			e, a, b, c, d, e = os.pullEvent()
+		end
+		if e == "char" then
+			if cobalt.textinput then	cobalt.textinput( a ) end
+		elseif e == "key" then
+			cobalt._keypressed( a, keys.getName( a ) )
+		elseif e == "key_up" then
+			cobalt._keyreleased( a, keys.getName( a ) )
+		elseif e == "mouse_click" then
+			if cobalt.mousepressed then cobalt.mousepressed( b, c, a ) end --b, c, a to keep love.mousepressed syntax as( x, y, button ), not ( button, x, y )
+		elseif e == "mouse_up" then
+			if cobalt.mousereleased then cobalt.mousereleased( b, c, a ) end
+		elseif e == "timer" then
+			if a == cobalt.updatetimer then
+				if cobalt.update then cobalt.update() end
+				cobalt.updatetimer = os.startTimer( 0.1 )
+			end
+		end
+		cobalt._draw()
+	end
+end
+
+
+return cobalt
