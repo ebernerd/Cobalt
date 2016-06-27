@@ -34,14 +34,12 @@ end
 
 function radio:draw()
 	if self.state == cobalt.state or self.state == "_ALL" and self.visible then
-		cobalt.g.pixel( self:getAbsX(), self:getAbsY(), self.backColour )
-		cobalt.g.setColour( self.foreColour )
+		local char = " "
 		if self.selected then
-			cobalt.g.print( self.char:sub(1,1), self:getAbsX(), self:getAbsY() )
+			char = self.char
 		end
-		cobalt.g.setBackgroundColour( self.parent.backColour )
-		cobalt.g.setBackgroundColour( self.parent.backColour )
-		cobalt.g.print( self.label, self:getAbsX() + 2, self:getAbsY())
+		self.parent.surf:drawPixel( math.ceil(self.x), math.ceil(self.y), char, self.backColour, self.foreColour )
+		self.parent.surf:drawText( math.ceil(self.x+2), math.ceil(self.y), self.label, nil, self.foreColour )
 	end
 end
 

@@ -1,6 +1,6 @@
 local text = {
-	x = 0,
-	y = 0,
+	x = 1,
+	y = 1,
 	text = "Some Text",
 	foreColour = colours.black,
 	type = "text",
@@ -17,11 +17,11 @@ function text.new( data, parent )
 end
 
 function text:getAbsX()
-	return self.x + self.parent:getAbsX()
+	return self.x + self.parent:getAbsX()-1
 end
 
 function text:getAbsY()
-	return self.y + self.parent:getAbsY()
+	return self.y + self.parent:getAbsY()-1
 end
 
 function text:centerInParent( x, y )
@@ -31,7 +31,7 @@ function text:centerInParent( x, y )
 		self.x = math.ceil(self.parent.w/2 - #self.text/2)
 	end
 	if y then
-		self.y = math.floor(self.parent.h/2)
+		self.y = math.ceil(self.parent.h/2)
 	end
 end
 
@@ -44,8 +44,7 @@ end
 
 function text:draw()
 	if self.state == cobalt.state or self.state == "_ALL" then
-		cobalt.g.setColour( self.foreColour )
-		cobalt.g.print(self.text, self:getAbsX(), self:getAbsY() )
+		self.parent.surf:drawText( math.ceil(self.x), math.ceil(self.y), self.text, self.backColour, self.foreColour )
 	end
 end
 

@@ -1,6 +1,6 @@
 local button = {
-	x = 0,
-	y = 0,
+	x = 1,
+	y = 1,
 	w = 11,
 	h = 2,
 	text = "A button",
@@ -22,11 +22,11 @@ function button.new( data, parent )
 end
 
 function button:getAbsX()
-	return self.x + self.parent:getAbsX()
+	return self.x + self.parent:getAbsX()-1
 end
 
 function button:getAbsY()
-	return self.y + self.parent:getAbsY()
+	return self.y + self.parent:getAbsY()-1
 end
 
 function button:centerInParent( x, y )
@@ -47,10 +47,12 @@ function button:draw()
 		if self.selected then
 			colour = cobalt.g.lighten( self.backColour )
 		end
-		cobalt.g.rect( "fill", self:getAbsX(), self:getAbsY(), self.w, self.h, colour )
-		cobalt.g.setColour( self.foreColour )
-		cobalt.g.print( self.text, self:getAbsX() + math.ceil(self.w/2 - #self.text/2), self:getAbsY() + self.h/2)
-		cobalt.g.setColour( colours.white )
+		if self.h == 1 then
+			self.parent.surf:drawLine( self.x, self.y+1, self.x + self.w, self.y+1, " ", colour, self.foreColour )
+		else
+			self.parent.surf:fillRect( self.x, self.y, self.x + self.w, self.y + self.h, " ", colour, self.foreColour )
+		end
+		self.parent.surf:drawText( math.ceil(self.x+self.w/2-#self.text/2), math.ceil(self.y+self.h/2), self.text, colour, self.foreColour )
 	end
 end
 

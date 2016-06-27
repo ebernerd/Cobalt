@@ -1,4 +1,5 @@
 cui = { }
+os.loadAPI( "cobalt-ui/surface" )
 
 cui.roots = { }
 
@@ -26,17 +27,17 @@ function cui.new( data )
 end
 
 function cui.mousepressed( x, y, button )
-	for i, v in ipairs( cui.roots ) do
-		if v.mousepressed then
-			if v:mousepressed( x, y, button ) then return end
+	for i = #cui.roots, 1, -1 do
+		if cui.roots[i].mousepressed then
+			if cui.roots[i]:mousepressed( x, y, button ) then return end
 		end
 	end
 end
 
 function cui.mousereleased( x, y, button )
-	for i, v in ipairs( cui.roots ) do
-		if v.mousereleased then
-			if v:mousereleased( x, y, button ) then return end
+	for i = #cui.roots, 1, -1 do
+		if cui.roots[i].mousereleased then
+			if cui.roots[i]:mousereleased( x, y, button ) then return end
 		end
 	end
 end
@@ -62,6 +63,14 @@ function cui.textinput( t )
 	for i, v in ipairs( cui.roots ) do
 		if v.textinput then
 			if v:textinput( t ) then return end
+		end
+	end
+end
+
+function cui.mousedrag( x, y )
+	for i, v in ipairs( cui.roots ) do
+		if v.mousedrag then
+			v:mousedrag( x, y )
 		end
 	end
 end

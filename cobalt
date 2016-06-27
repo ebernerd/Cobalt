@@ -11,12 +11,17 @@ cobalt = {
 	keyboard = {
 		keysdown = { },
 	},
+	rednet = {
+
+	},
 	mouse = { },
 	table = { },
 	state = "MAIN",
-	updatetimer = os.startTimer( 0.1 ),
 	version = "1.0",
+	updatespeed = 0.1
 }
+
+cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
 
 function cobalt.debug( item )
 	term.setBackgroundColour( colours.black )
@@ -26,6 +31,15 @@ function cobalt.debug( item )
 	print( "COBALT DEBUG" )
 	print( item )
 	cobalt.exit()
+end
+
+
+args = { ... }
+if args[1] == "version" then
+	print( "Cobalt " .. cobalt.version )
+elseif args[1] == "help" then
+	print( "You can find help resources here: ")
+	print( "https://github.com/ebernerd/Cobalt/wiki")
 end
 
 cobalt.g = cobalt.graphics
@@ -80,6 +94,22 @@ function cobalt.graphics.rect( mode, x, y, w, h, colour )
 		paintutils.drawBox( x, y, x+w, y+h, colour )
 	end
 end
+function cobalt.graphics.center( text, y, offset )
+	text = text or "Some Text"
+	y = y or 1
+	offset = offset or 0
+	cobalt.graphics.print( text, (cobalt.window.getWidth()/2-#text/2)-offset, y )
+end
+function cobalt.graphics.centerInArea( text, x1, y1, x2, y2 )
+	text = text or "Some Text"
+	x1 = x1 or 1
+	x2 = x2 or cobalt.window.getWidth()
+	y1 = y1 or 1
+	y2 = y2 or cobalt.window.getHeight()
+	cobalt.graphics.print( text, (x1+x2)/2-#text/2, (y1+y2)/2 )
+end
+
+
 cobalt.graphics.rectangle = cobalt.graphics.rect
 cobalt.graphics.pixel = paintutils.drawPixel
 function cobalt.graphics.line( x, y, a, b, colour )
@@ -139,6 +169,13 @@ function cobalt.keyboard.isDown( key )
 	return false
 end
 
+
+
+--[=[REDNET FUNCTIONS]=]--
+function cobalt.rednet.receive(time, ret)
+
+end
+
 --[=[STATE FUNCTIONS]=]--
 function cobalt.getState()
 	return cobalt.state
@@ -169,12 +206,16 @@ cobalt.filesystem.list = fs.list
 cobalt.filesystem.getDirectoryItems = fs.list
 cobalt.filesystem.isFile = fs.exists
 cobalt.filesystem.isDir = fs.isDir
-cobalt.filesystem.currentDir = shell.dir()
+--cobalt.filesystem.currentDir = shell.dir()
 
 cobalt.raw = false
 
 function cobalt.exit()
 	cobalt._mainloop = false
+	term.setBackgroundColour(colours.black)
+	term.setTextColour( colours.white )
+	term.clear()
+	term.setCursorPos( 1, 1 )
 	return
 end
 
@@ -205,13 +246,19 @@ function cobalt.initLoop()
 			if cobalt.mousepressed then cobalt.mousepressed( b, c, a ) end --b, c, a to keep love.mousepressed syntax as( x, y, button ), not ( button, x, y )
 		elseif e == "mouse_up" then
 			if cobalt.mousereleased then cobalt.mousereleased( b, c, a ) end
+		elseif e == "rednet_message" then
+			if cobalt.rednetreceive then cobalt.rednetreceive( a, b, c ) end
+		elseif e == "mouse_drag" then
+			if cobalt.mousedrag then cobalt.mousedrag( x, y ) end
 		elseif e == "timer" then
 			if a == cobalt.updatetimer then
-				if cobalt.update then cobalt.update() end
-				cobalt.updatetimer = os.startTimer( 0.1 )
+				if cobalt.update then cobalt.update( cobalt.updatespeed ) end
+				cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
+				cobalt._draw()
 			end
 		end
-		cobalt._draw()
+
+
 	end
 end
 

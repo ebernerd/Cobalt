@@ -1,11 +1,13 @@
 local input = {
-	x = 0,
-	y = 0,
+	x = 1,
+	y = 1,
 	w = 25,
-	backPassiveColour = colours.grey,
-	backActiveColour = colours.lightGrey,
+	backPassiveColour = colours.white,
+	backActiveColour = colours.white,
 	forePassiveColour = colours.lightGrey,
 	foreActiveColour = colours.black,
+	placeholderColour = colours.lightGrey,
+	placeholder = "",
 	text = "",
 	mask = "",
 	active = false,
@@ -26,11 +28,11 @@ function input.new( data, parent )
 end
 
 function input:getAbsX()
-	return self.x + self.parent:getAbsX()
+	return self.x + self.parent:getAbsX()-1
 end
 
 function input:getAbsY()
-	return self.y + self.parent:getAbsY()
+	return self.y + math.floor(self.parent:getAbsY())-1
 end
 
 function input:update()
@@ -53,23 +55,28 @@ function input:draw()
 			bc = self.backActiveColour
 			fc = self.foreActiveColour
 		end
-		cobalt.g.line( self:getAbsX(), self:getAbsY(), self.w, self:getAbsY(), bc )
-		cobalt.g.setColour( fc )
+		self.parent.surf:drawLine( math.floor(self.x), math.floor(self.y), math.floor(self.x) + self.w, math.floor(self.y), " ", bc, fc )
 		local t = self.text
-		if #self.text > self.w-3 then
-			t = self.text:sub( #self.text-self.w+3, #self.text )
+		if #self.text > self.w-1 then
+			t = self.text:sub( #self.text-self.w+1, #self.text )
 		end
-		if self.mask ~= ""  then
-			local mskstr = ""
-			for i = 1, #self.text do
-				mskstr = mskstr .. self.mask
+		if #self.text > 0 then
+			if self.mask ~= ""  then
+				local mskstr = ""
+				for i = 1, #self.text do
+					mskstr = mskstr .. self.mask
+				end
+				self.parent.surf:drawText( math.floor(self.x), math.floor(self.y), mskstr, bc, fc )
+			else
+				self.parent.surf:drawText( math.floor(self.x), math.floor(self.y), t, bc, fc )
 			end
-			cobalt.g.write( mskstr, self:getAbsX(), self:getAbsY() )
 		else
-			cobalt.g.write( t, self:getAbsX(), self:getAbsY())
+			if not self.active then
+				self.parent.surf:drawText( math.floor(self.x), math.floor(self.y), self.placeholder, bc, self.placholderColour )
+			end
 		end
 		if self.flash then
-			cobalt.g.print( "_", self:getAbsX() + #t, self:getAbsY())
+			self.parent.surf:drawText( math.floor(self.x+#t), math.floor(self.y), "_", bc, fc )
 		end
 	end
 end
@@ -90,16 +97,18 @@ function input:mousereleased( x, y, button )
 end
 
 function input:keypressed( keycode, key )
-	if self.state == cobalt.state or self.state == "_ALL" and self.active then
-		self.timer = 0
-		self.flash = true
-		if keycode == 14 then
-			self.text = self.text:sub(1, #self.text-1 )
-		elseif keycode == 211 then
+	if self.active then
+		if self.state == cobalt.state or self.state == "_ALL" then
+			self.timer = 0
+			self.flash = true
+			if keycode == 14 then
+				self.text = self.text:sub(1, #self.text-1 )
+			elseif keycode == 211 then
 
-		elseif keycode == 28 then
-			self.active = false
-			if self.oncomplete then self:oncomplete() end
+			elseif keycode == 28 then
+				self.active = false
+				if self.oncomplete then self:oncomplete() end
+			end
 		end
 	end
 end
