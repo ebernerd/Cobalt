@@ -34,12 +34,33 @@ function cobalt.debug( item )
 end
 
 
-args = { ... }
+local args = { ... }
 if args[1] == "version" then
 	print( "Cobalt " .. cobalt.version )
 elseif args[1] == "help" then
 	print( "You can find help resources here: ")
 	print( "https://github.com/ebernerd/Cobalt/wiki")
+elseif args[1] == "examples" then
+	if fs.isDir( "cobalt-examples" ) then
+		if args[2] then
+			if fs.exists( "cobalt-examples/" .. args[2] ) then
+				shell.run( "cobalt-examples/" .. args[2] )
+			else
+				print( "List of Cobalt examples: ")
+				for i, v in pairs( fs.list( "cobalt-examples" ) ) do
+					print( "-" .. v )
+				end
+			end
+		else
+			print( "List of Cobalt examples: ")
+			for i, v in pairs( fs.list( "cobalt-examples" ) ) do
+				print( "-" .. v )
+			end
+		end
+	else
+		print( "Download the Cobalt examples here" )
+		print( "http://github.com/ebernerd")
+	end
 end
 
 cobalt.g = cobalt.graphics
@@ -50,48 +71,63 @@ cobalt.w = cobalt.window
 cobalt.m = cobalt.mouse
 
 local graphics_lighten = {
-	[32768] = colours.grey,
-	[128] = colours.lightGrey,
-	[256] = colours.white,
-	[1] = colours.white,
+	[colours.black] = colours.grey,
+	[colours.grey] = colours.lightGrey,
+	[colours.lightGrey] = colours.white,
+	[colours.white] = colours.white,
 
-	[2048] = colours.cyan,
-	[512] = colours.lightBlue,
-	[8] = colours.white,
+	[colours.blue] = colours.cyan,
+	[colours.cyan] = colours.lightBlue,
+	[colours.lightBlue] = colours.white,
 
-	[8192] = colours.lime,
-	[32] = colours.white,
+	[colours.green] = colours.lime,
+	[colours.lime] = colours.white,
 
-	[4096] = colours.orange,
-	[2] = colours.yellow,
-	[16] = colours.white,
+	[colours.brown] = colours.orange,
+	[colours.orange] = colours.yellow,
+	[colours.yellow] = colours.white,
 
-	[16384] = colours.pink,
-	[64] = colours.white,
+	[colours.red] = colours.pink,
+	[colours.pink] = colours.white,
 
-	[1024] = colours.magenta,
-	[4] = colours.white,
+	[colours.purple] = colours.magenta,
+	[colours.magenta] = colours.white,
 
 }
 
 local graphics_darken = {
+	[colours.white] = colours.lightGrey,
+	[colours.lightGrey] = colours.grey,
+	[colours.grey] = colours.grey,
 
+	[colours.lightBlue] = colours.cyan,
+	[colours.cyan] = colours.blue,
+
+	[colours.lime] = colours.green,
+
+	[colours.yellow] = colours.orange,
+	[colours.orange] = colours.brown,
+
+	[colours.pink] = colours.red,
+	[colours.magenta] = colours.purple,
 }
 
 --[=[ GRAPHICS FUNCTIONS ]=]--
-function cobalt.graphics.print( text, x, y )
+function cobalt.graphics.print( text, x, y, colour )
+	term.setTextColour( colour or term.getTextColour() )
 	term.setCursorPos( x, y )
 	print( text )
 end
-function cobalt.graphics.write( text, x, y )
+function cobalt.graphics.write( text, x, y, colour )
+	term.setTextColour( colour or term.getTextColour() )
 	term.setCursorPos( x, y )
 	write( text )
 end
 function cobalt.graphics.rect( mode, x, y, w, h, colour )
 	if mode == "fill" then
-		paintutils.drawFilledBox( x, y, x+w, y+h, colour )
+		return paintutils.drawFilledBox( x, y, x+w, y+h, colour )
 	elseif mode == "line" then
-		paintutils.drawBox( x, y, x+w, y+h, colour )
+		return paintutils.drawBox( x, y, x+w, y+h, colour )
 	end
 end
 function cobalt.graphics.center( text, y, offset )
@@ -112,9 +148,7 @@ end
 
 cobalt.graphics.rectangle = cobalt.graphics.rect
 cobalt.graphics.pixel = paintutils.drawPixel
-function cobalt.graphics.line( x, y, a, b, colour )
-	paintutils.drawLine( x, y, a, b, colour )
-end
+cobalt.graphics.line = paintutils.drawLine
 
 --[=[function cobalt.graphics.setBackgroundColour( colour )
 	cobalt.vars.backgroundcolour = colour
@@ -146,6 +180,7 @@ function cobalt.window.getHeight()
 	return y
 end
 
+cobalt.window.getSize = term.getSize
 
 --[=[KEYBOARD FUNCTIONS]=]--
 function cobalt._keypressed( key, keycode )
@@ -170,6 +205,11 @@ function cobalt.keyboard.isDown( key )
 end
 
 
+function cobalt.round(num, idp)
+	local mult = 10^(idp or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
 
 --[=[REDNET FUNCTIONS]=]--
 function cobalt.rednet.receive(time, ret)
@@ -182,40 +222,24 @@ function cobalt.getState()
 end
 
 
-
-function deepcopy(t) -- deep-copy a table
-    if type(t) ~= "table" then return t end
-    local meta = getmetatable(t)
-    local target = {}
-    for k, v in pairs(t) do
-        if type(v) == "table" then
-            target[k] = deepcopy(v)
-        else
-            target[k] = v
-        end
-    end
-    setmetatable(target, meta)
-    return target
-end
-
-
-
-
 --[=[FILESYSTEM FUNCTIONS]=]--
 cobalt.filesystem.list = fs.list
 cobalt.filesystem.getDirectoryItems = fs.list
 cobalt.filesystem.isFile = fs.exists
-cobalt.filesystem.isDir = fs.isDir
+cobalt.filesystem.isDirectory = fs.isDir
 --cobalt.filesystem.currentDir = shell.dir()
 
 cobalt.raw = false
 
-function cobalt.exit()
+function cobalt.exit( msg )
 	cobalt._mainloop = false
-	term.setBackgroundColour(colours.black)
-	term.setTextColour( colours.white )
-	term.clear()
-	term.setCursorPos( 1, 1 )
+	for i = 1, 10 do
+		term.setBackgroundColour(colours.black)
+		term.setTextColour( colours.white )
+		term.clear()
+		term.setCursorPos( 1, 1 )
+	end
+	print( msg )
 	return
 end
 
@@ -227,7 +251,7 @@ function cobalt._draw()
 	cobalt.draw()
 end
 
-function cobalt.initLoop()
+function cobalt.initLoop( runOnce )
 	while cobalt._mainloop do
 
 		local e, a, b, c, d, e
@@ -248,6 +272,8 @@ function cobalt.initLoop()
 			if cobalt.mousereleased then cobalt.mousereleased( b, c, a ) end
 		elseif e == "rednet_message" then
 			if cobalt.rednetreceive then cobalt.rednetreceive( a, b, c ) end
+		elseif e == "monitor_touch" then
+			if cobalt.monitortouch then cobalt.monitortouch( x, y ) else cobalt.mousereleased( x, y ) end
 		elseif e == "mouse_drag" then
 			if cobalt.mousedrag then cobalt.mousedrag( x, y ) end
 		elseif e == "timer" then
@@ -259,7 +285,12 @@ function cobalt.initLoop()
 		end
 
 
+		if runOnce then cobalt._mainloop = false; return end
 	end
+end
+
+function cobalt.initOnce()
+	cobalt.initLoop( true )
 end
 
 

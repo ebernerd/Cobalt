@@ -13,12 +13,24 @@ local panel = {
 	alwaysfocus = false,
 	scrollx = 0,
 	scrolly = 0,
+	autosize = true,
+	autow = "none",
+	autoh = "none",
+	wperc = false,
+	hperc = false,
 }
 panel.__index = panel
 
 function panel.new( data, parent, isroot )
 	local self = setmetatable(data,panel)
+
+	if not isroot then
+		self:resize()
+	end
+
 	self.children = { }
+	self.bw = self.w
+	self.bh = self.h
 	self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
 	if isroot then
 		table.insert( cui.roots, self )
@@ -31,6 +43,41 @@ function panel.new( data, parent, isroot )
 		self.parent = parent
 	end
 	return self
+end
+
+function panel:resize()
+	if type(self.w) == "string" then
+		if self.w:sub( #self.w ) == "%" then
+			local perc = self.w:sub( 1, #self.w-1 )
+			perc = tonumber(perc)
+			if perc > 100 or perc < 0 then
+				error( "Invalid percentage" )
+			else
+				self.wperc = perc
+				self.w = math.ceil( self.parent.w * tonumber( "0." .. perc ) )
+				self.autow = "perc"
+				self.autosize = true
+			end
+		else
+			error("Expected number or percentage")
+		end
+	end
+	if type(self.h) == "string" then
+		if self.h:sub( #self.h ) == "%" then
+			local perc = self.h:sub( 1, #self.h-1 )
+			perc = tonumber(perc)
+			if perc > 100 or perc < 0 then
+				error( "Invalid percentage" )
+			else
+				self.hperc = perc
+				self.h = math.ceil( self.parent.h * tonumber( "0." .. perc ) )
+				self.autow = "perc"
+				self.autosize = true
+			end
+		else
+			error("Expected number or percentage")
+		end
+	end
 end
 
 function panel:getAbsX()
@@ -114,7 +161,22 @@ function panel:centerInParent( x, y )
 end
 
 function panel:update( dt )
-
+	if self.w ~= self.bw then
+		for i, v in pairs( self.children ) do
+			if v.onparentresize then v:resize() end
+		end
+		self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
+		self.bw = self.w
+		self:resize()
+	end
+	if self.h ~= self.bh then
+		for i, v in pairs( self.children ) do
+			if v.onparentresize then v:onparentresize() end
+		end
+		self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
+		self.bh = self.h
+		self:resize()
+	end
 	for i, v in pairs( self.children ) do
 		if v.update then v:update() end
 	end
@@ -122,6 +184,7 @@ function panel:update( dt )
 end
 
 function panel:draw( )
+
 	if self.state == cobalt.state or self.state == "_ALL" then
 		self.surf:clear(" ", self.backColour, self.foreColour)
 		for i, v in pairs( self.children ) do

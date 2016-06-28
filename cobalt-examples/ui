@@ -1,0 +1,247 @@
+cobalt = dofile( "cobalt" )
+cobalt.ui = dofile( "cobalt-ui/init.lua" )
+
+cobalt.state = "Cobalt-UI Examples"
+local page = 1
+local pages = {
+	[1] = "Cobalt-UI Examples",
+	[2] = "Getting Started",
+	[3] = "List of Objects",
+	[4] = "Interactive Examples"
+}
+
+MainPanel = cobalt.ui.new( {
+
+  w = cobalt.window.getWidth(),
+  h = cobalt.window.getHeight(),
+  backColour = colours.white,
+  foreColour = colours.grey,
+
+} )
+
+Title = MainPanel:add( "panel", {
+
+  w = MainPanel.w,
+  h = 3,
+  backColour = colours.blue,
+
+} )
+
+TitleText = Title:add( "text", {
+  x = 2,
+  y = 2,
+  text = cobalt.state,
+  foreColour = colours.white
+
+} )
+
+Exit = Title:add( "button", {
+
+  x = Title.w - 10,
+  y = 1,
+  h = 2,
+  w = 10,
+  backColour = colours.blue,
+  text = "Exit ->",
+  onclick = function()
+    cobalt.exit()
+  end,
+
+} )
+
+PageControl = MainPanel:add( "panel", {
+
+  w = MainPanel.w,
+  h = 1,
+  y = MainPanel.h,
+  x = 1,
+  backColour = colours.grey,
+
+} )
+
+NextPage = PageControl:add( "button", {
+
+  w = 8,
+  h = 1,
+  y = 0,
+  x = PageControl.w-7,
+  backColour = colours.grey,
+  foreColour = colours.white,
+  text = "Next ->",
+  onclick = function()
+    page = page + 1
+    cobalt.state = pages[page]
+    TitleText.text = cobalt.state
+  end
+} )
+
+PrevPage = PageControl:add( "button", {
+
+  w = 8,
+  h = 1,
+  y = 0,
+  x = 1,
+  backColour = colours.grey,
+  foreColour = colours.white,
+  text = "<- Prev",
+  onclick = function()
+    if page > 1 then
+	    page = page - 1
+         cobalt.state = pages[page]
+         TitleText.text = cobalt.state
+    end
+  end,
+
+} )
+
+
+--PAGE 1--
+Page1 = MainPanel:add( "panel", {
+
+  w = MainPanel.w-2,
+  h = MainPanel.h - 6,
+  x = 2,
+  y = 5,
+
+  --backColour = colours.lightGrey,
+  state = "Cobalt-UI Examples",
+
+} )
+
+Page1:add( "text", {
+
+  foreColour = colours.cyan,
+  text = "Welcome to the Cobalt-UI Example!",
+
+} )
+
+Page1:add( "text", {
+
+  foreColour = colours.grey,
+  text = "Here you can see interactive example\nof UI elements, and how they work!\n\nPress the \"Next ->\" button to get started!",
+
+  y = 3,
+
+} )
+
+--PAGE 2--
+Page2 = MainPanel:add( "panel", {
+
+  w = MainPanel.w-2,
+  h = MainPanel.h - 6,
+  x = 2,
+  y = 5,
+
+  --backColour = colours.lightGrey,
+  state = "Getting Started",
+
+} )
+
+Page2:add( "text", {
+	foreColour = colours.grey,
+	text = "Getting started with Cobalt-UI is easy.\n\n   1) Load Cobalt\n   2) Load Cobalt-UI\n   3) Start Programming!\n\nExample:",
+})
+Exmp2 = Page2:add( "panel", {
+	y = 8,
+	backColour = colours.black,
+	w = Page2.w,
+	x = 1,
+	h = 4,
+})
+Exmp2:add( "text", {
+	foreColour = colours.white,
+	text = "cobalt = dofile('cobalt')\ncobalt.ui = dofile('cobalt-ui/init.lua')",
+	x = 2,
+	y = 2
+})
+
+--Page3--
+Page3 = MainPanel:add( "panel", {
+
+  w = MainPanel.w-2,
+  h = MainPanel.h - 6,
+  x = 2,
+  y = 5,
+
+  --backColour = colours.lightGrey,
+  state = "List of Objects",
+
+} )
+
+Page3:add( "text", {
+	text = "Cobalt-UI has a lot of objects to offer:\n\n    -Panel\n    -Text\n    -Button\n    -Checkbox\n    -Radio\n    -Input\n\nEach has a unique and specific purpose along with\ntheir own attributes",
+	foreColour = colours.grey,
+})
+
+--PAGE 4--
+Page4 = MainPanel:add( "panel", {
+
+  w = MainPanel.w-2,
+  h = MainPanel.h - 6,
+  x = 2,
+  y = 5,
+
+  --backColour = colours.lightGrey,
+  state = "Interactive Examples",
+
+} )
+
+Exmp4B = Page4:add( "button", { text = "Click Me!" } )
+Exmp4B.onclick = function()
+	Exmp4B.backColour = 2 ^ math.random( 1, 15 )
+end
+
+Page4:add( "radio", { x = 14, y = 1, label = "Radio Group A", group = "A", selected=true } )
+Page4:add( "radio", { x = 14, y = 3, label = "Radio Group A", group = "A"} )
+
+Page4:add( "radio", { x = 32, y = 1, label = "Radio Group B", group = "B", selected=true } )
+Page4:add( "radio", { x = 32, y = 3, label = "Radio Group B", group = "B"} )
+
+Page4:add( "checkbox", { y = 6, x = 1, label = "Checkbox", group = "B"} )
+Page4:add( "checkbox", { y = 8, x = 1, label = "Checkbox", group = "B"} )
+
+Page4:add( "input", { y = 11, placeholder = "Hello World!", w = 12, backPassiveColour = colours.lightGrey, forePassiveColour = colours.grey } )
+
+Inner = Page4:add("panel", {
+	w = 29,
+	h = 7,
+	backColour = colours.grey,
+	x = 16,
+	y = 5,
+})
+
+Inner:add("text", {foreColour = colours.white, text = "A panel in a panel!"}):centerInParent(true, true)
+
+function cobalt.update( dt )
+
+  cobalt.ui.update( dt )
+
+end
+
+function cobalt.draw( )
+
+  cobalt.ui.draw( )
+
+end
+
+function cobalt.mousepressed( x, y, button )
+  cobalt.ui.mousepressed( x, y, button )
+end
+
+function cobalt.mousereleased( x, y, button )
+  cobalt.ui.mousereleased( x, y, button )
+end
+
+function cobalt.keypressed( keycode, key )
+	cobalt.ui.keypressed( keycode, key )
+end
+
+function cobalt.keyreleased( keycode, key )
+	cobalt.ui.keyreleased( keycode, key )
+end
+
+function cobalt.textinput( t )
+	cobalt.ui.textinput( t )
+end
+
+cobalt.initLoop()

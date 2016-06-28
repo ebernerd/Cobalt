@@ -8,10 +8,10 @@ for i, v in pairs( fs.list( "cobalt-ui/elements" ) ) do
 	cui.elements[v:sub(1, #v-4)] = dofile("cobalt-ui/elements/" .. v)
 end
 
-function cui.update( )
+function cui.update( dt )
 	for i, v in ipairs( cui.roots ) do
 		if v.update then
-			if v:update( ) then return end
+			v:update( dt )
 		end
 	end
 end

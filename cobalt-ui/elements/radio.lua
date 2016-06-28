@@ -25,11 +25,11 @@ function radio.new( data, parent )
 end
 
 function radio:getAbsX()
-	return self.x + self.parent:getAbsX()
+	return self.x + self.parent:getAbsX()-1
 end
 
 function radio:getAbsY()
-	return self.y + self.parent:getAbsY()
+	return self.y + self.parent:getAbsY()-1
 end
 
 function radio:draw()
