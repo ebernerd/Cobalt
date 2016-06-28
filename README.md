@@ -8,7 +8,7 @@ Here you can learn how to use the callback wrapper for ComputerCraft. If you've 
 # Getting Started
 To get started, you must include the Cobalt wrapper into your file. You can do that by downloading the main `cobalt` file, and placing it wherever you'd like in your ComputerCraft filesystem (you will need the absolute path of it to use it, however). Then, open your new Cobalt project (an empty file) and place:
 ```lua
-cobalt = dofile( "path/to/cobalt" )
+local cobalt = dofile( "path/to/cobalt" )
 ```
 You then need to include all of the callbacks:
 ```lua
