@@ -14,10 +14,17 @@ local panel = {
 	scrollx = 0,
 	scrolly = 0,
 	autosize = true,
+	marginleft = 0,
+	marginright = 0,
+	margintop = 0,
+	marginbottom = 0,
 	autow = "none",
 	autoh = "none",
-	wperc = false,
-	hperc = false,
+	automl = false,
+	automr = false,
+	automt = false,
+	automb = false,
+	wrap = "left",
 }
 panel.__index = panel
 
@@ -31,7 +38,6 @@ function panel.new( data, parent, isroot )
 	self.children = { }
 	self.bw = self.w
 	self.bh = self.h
-	self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
 	if isroot then
 		table.insert( cui.roots, self )
 		self.isroot = true
@@ -42,42 +48,103 @@ function panel.new( data, parent, isroot )
 		table.insert( parent.children, self )
 		self.parent = parent
 	end
+	if type(self.w) == "string" then
+		self.w = cobalt.getPercentage( self.w )
+		self.autow = "perc:" .. self.w
+	end
+	if type(self.h) == "string" then
+		self.h = cobalt.getPercentage( self.h )
+		self.autoh = "perc:" .. self.h
+	end
+
+	if type(self.marginleft) == "string" then
+		self.marginleft = cobalt.getPercentage( self.marginleft )
+		self.automl = "perc:" .. self.marginleft
+	end
+	if type(self.marginright) == "string" then
+		self.marginright = cobalt.getPercentage( self.marginright )
+		self.automr = "perc:" .. self.marginright
+	end
+	if type(self.margintop) == "string" then
+		self.margintop = cobalt.getPercentage( self.margintop )
+		self.automt = "perc:" .. self.margintop
+	end
+	if type(self.marginbottom) == "string" then
+		self.marginbottom = cobalt.getPercentage( self.marginbottom )
+		self.automl = "perc:" .. self.marginbottom
+	end
+	if type(self.x) == "string" then
+		self.x = cobalt.getPercentage( self.x )
+		self.autox = "perc:" .. self.x
+	end
+	if type(self.y) == "string" then
+		self.y = cobalt.getPercentage( self.y )
+		self.autoy = "perc:" .. self.y
+	end
+
+
+	self:resize()
 	return self
 end
 
 function panel:resize()
-	if type(self.w) == "string" then
-		if self.w:sub( #self.w ) == "%" then
-			local perc = self.w:sub( 1, #self.w-1 )
-			perc = tonumber(perc)
-			if perc > 100 or perc < 0 then
-				error( "Invalid percentage" )
-			else
-				self.wperc = perc
-				self.w = math.ceil( self.parent.w * tonumber( "0." .. perc ) )
-				self.autow = "perc"
-				self.autosize = true
-			end
+	if self.autow:sub( 1, 4 ) == "perc" then
+		local perc = self.autow:match("perc:(%d+)")
+		if self.parent then
+			self.w = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
 		else
-			error("Expected number or percentage")
+			self.w = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
 		end
 	end
-	if type(self.h) == "string" then
-		if self.h:sub( #self.h ) == "%" then
-			local perc = self.h:sub( 1, #self.h-1 )
-			perc = tonumber(perc)
-			if perc > 100 or perc < 0 then
-				error( "Invalid percentage" )
-			else
-				self.hperc = perc
-				self.h = math.ceil( self.parent.h * tonumber( "0." .. perc ) )
-				self.autow = "perc"
-				self.autosize = true
-			end
+	if self.automl and self.automl:sub( 1, 4 ) == "perc" then
+		local perc = self.automl:match("perc:(%d+)")
+		if self.parent then
+			self.marginleft = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
 		else
-			error("Expected number or percentage")
+			self.marginleft = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
 		end
 	end
+	if self.automr and self.automr:sub( 1, 4 ) == "perc" then
+		local perc = self.automr:match("perc:(%d+)")
+		if self.parent then
+			self.marginright = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		else
+			self.marginright = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+		end
+	end
+	if self.automt and self.automt:sub( 1, 4 ) == "perc" then
+		local perc = self.automt:match("perc:(%d+)")
+		if self.parent then
+			self.margintop = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		else
+			self.margintop = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+		end
+	end
+	if self.automb and self.automb:sub( 1, 4 ) == "perc" then
+		local perc = self.automb:match("perc:(%d+)")
+		if self.parent then
+			self.marginbottom = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		else
+			self.marginbottom = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+		end
+	end
+	if self.autox and self.autox and self.autox:sub( 1, 4 ) == "perc" then
+		local perc = self.autox:match("perc:(%d+)")
+		if self.parent then
+			self.x = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		else
+			self.x = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+		end
+	end
+	if self.autoy and self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
+		local perc = self.autoy:match("perc:(%d+)")
+		if self.parent then
+			self.y = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		else
+			self.y = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+		end
+	end
+	self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
 end
 
 function panel:getAbsX()
@@ -149,31 +216,18 @@ function panel:sendToBack()
 
 end
 
-function panel:centerInParent( x, y )
-	x = x or true
-	y = y or false
-	if x then
-		self.x = math.ceil(self.parent.w/2 - self.w/2)
-	end
-	if y then
-		self.y = math.floor(self.parent.h/2 - self.h/2)
-	end
-end
-
 function panel:update( dt )
 	if self.w ~= self.bw then
 		for i, v in pairs( self.children ) do
 			if v.onparentresize then v:resize() end
 		end
-		self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
 		self.bw = self.w
 		self:resize()
 	end
 	if self.h ~= self.bh then
 		for i, v in pairs( self.children ) do
-			if v.onparentresize then v:onparentresize() end
+			if v.resize then v:resize() end
 		end
-		self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
 		self.bh = self.h
 		self:resize()
 	end
@@ -184,16 +238,18 @@ function panel:update( dt )
 end
 
 function panel:draw( )
-
+	if self.wrap == "center" then
+		self.x = ( self.parent.w/2 - self.w/2 ) + self.marginleft
+	end
 	if self.state == cobalt.state or self.state == "_ALL" then
 		self.surf:clear(" ", self.backColour, self.foreColour)
 		for i, v in pairs( self.children ) do
 			if v.draw then v:draw() end
 		end
 		if self.isroot then
-			self.surf:render(term, self.x, self.y, self.scrollx, self.scrolly, self.scrollx + self.w, self.scrolly+self.h)
+			self.surf:render(term, self.x+self.marginleft, self.y+self.margintop, self.scrollx, self.scrolly, self.scrollx + self.w, self.scrolly+self.h)
 		else
-			self.parent.surf:drawSurface(self.x, self.y, self.surf)
+			self.parent.surf:drawSurface(self.x+self.marginleft, self.y+self.marginright, self.surf)
 		end
 	end
 end

@@ -221,6 +221,33 @@ function cobalt.getState()
 	return cobalt.state
 end
 
+function cobalt.getPercentage( str )
+	if type(str) == "string" then
+		if str:sub( #str ) == "%" then
+			local perc = str:sub( 1, #str-1 )
+			perc = tonumber(perc)
+			if perc > 100 or perc < 0 then
+				error( "Invalid percentage" )
+			else
+				if perc == 100 then
+					return 1
+				else
+					return perc
+				end
+			end
+		else
+			error("Expected number or percentage")
+		end
+	end
+end
+
+function cobalt.setPercentage( perc )
+	if tonumber(perc) >= 100 then
+		return 1
+	end
+	return tonumber( "0." .. perc )
+end
+
 
 --[=[FILESYSTEM FUNCTIONS]=]--
 cobalt.filesystem.list = fs.list
@@ -240,7 +267,7 @@ function cobalt.exit( msg )
 		term.setCursorPos( 1, 1 )
 	end
 	print( msg )
-	return
+	return true
 end
 
 function cobalt._draw()

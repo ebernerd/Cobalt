@@ -9,6 +9,17 @@ local button = {
 	selected = false,
 	visible = true,
 	type = "button",
+	marginleft = 0,
+	marginright = 0,
+	margintop = 0,
+	marginbottom = 0,
+	automl = "",
+	automr = "",
+	automt = "",
+	automb = "",
+	autow = "perc:50",
+	wrap = "left",
+	autoh = true,
 }
 button.__index = button
 
@@ -16,9 +27,72 @@ function button.new( data, parent )
 	data = data or { }
 	local self = setmetatable( data, button )
 	self.parent = parent
+	if type(self.w) == "string" then
+		self.w = cobalt.getPercentage( self.w )
+		self.autow = "perc:" .. self.w
+	end
+	if type(self.marginleft) == "string" then
+		self.marginleft = cobalt.getPercentage( self.marginleft )
+		self.automl = "perc:" .. self.marginleft
+	end
+	if type(self.marginright) == "string" then
+		self.marginright = cobalt.getPercentage( self.marginright )
+		self.automr = "perc:" .. self.marginright
+	end
+	if type(self.margintop) == "string" then
+		self.margintop = cobalt.getPercentage( self.margintop )
+		self.automt = "perc:" .. self.margintop
+	end
+	if type(self.marginbottom) == "string" then
+		self.marginbottom = cobalt.getPercentage( self.marginbottom )
+		self.automl = "perc:" .. self.marginbottom
+	end
+	if type(self.x) == "string" then
+		self.x = cobalt.getPercentage( self.x )
+		self.autox = "perc:" .. self.x
+	end
+	if type(self.y) == "string" then
+		self.y = cobalt.getPercentage( self.y )
+		self.autoy = "perc:" .. self.y
+	end
+	self:resize()
 	self.state = data.state or parent.state
 	table.insert( parent.children, self )
 	return self
+end
+
+
+
+function button:resize()
+	if self.autow:sub( 1, 4 ) == "perc" then
+		local perc = self.autow:match("perc:(%d+)")
+		cobalt.setPercentage( perc )
+		self.w = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	end
+	if self.automl:sub( 1, 4 ) == "perc" then
+		local perc = self.automl:match("perc:(%d+)")
+		self.marginleft = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	end
+	if self.automr:sub( 1, 4 ) == "perc" then
+		local perc = self.automr:match("perc:(%d+)")
+		self.marginright = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	end
+	if self.automt:sub( 1, 4 ) == "perc" then
+		local perc = self.automt:match("perc:(%d+)")
+		self.margintop = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+	end
+	if self.automb:sub( 1, 4 ) == "perc" then
+		local perc = self.automb:match("perc:(%d+)")
+		self.marginbottom = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+	end
+	if self.autox and self.autox:sub( 1, 4 ) == "perc" then
+		local perc = self.autox:match("perc:(%d+)")
+		self.x = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	end
+	if self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
+		local perc = self.autoy:match("perc:(%d+)")
+		self.y = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+	end
 end
 
 function button:getAbsX()
@@ -29,30 +103,21 @@ function button:getAbsY()
 	return self.y + self.parent:getAbsY()-1
 end
 
-function button:centerInParent( x, y )
-	x = x or true
-	y = y or false
-	if x then
-		self.x = math.ceil(self.parent.w/2 - self.w/2)
-	end
-	if y then
-		self.y = math.floor(self.parent.h/2 - self.h/2)
-	end
-end
-
-
 function button:draw()
 	if self.state == cobalt.state or self.state == "_ALL" and self.visible then
 		local colour = self.backColour
+		if self.wrap == "center" then
+			self.x = math.ceil( (self.parent.w/2)-self.w/2 + self.marginleft )
+		end
 		if self.selected then
 			colour = cobalt.g.lighten( self.backColour )
 		end
 		if self.h == 1 then
-			self.parent.surf:drawLine( self.x, self.y+1, self.x + self.w, self.y+1, " ", colour, self.foreColour )
+			self.parent.surf:drawLine( self.x + self.marginleft, self.y+1 + self.margintop, self.x + self.w, self.y+1, " ", colour, self.foreColour )
 		else
-			self.parent.surf:fillRect( self.x, self.y, self.x + self.w, self.y + self.h, " ", colour, self.foreColour )
+			self.parent.surf:fillRect( self.x, self.y+ self.margintop, self.x + self.w, self.y + self.h, " ", colour, self.foreColour )
 		end
-		self.parent.surf:drawText( math.ceil(self.x+self.w/2-#self.text/2), math.ceil(self.y+self.h/2), self.text, colour, self.foreColour )
+		self.parent.surf:drawText( self.x+math.ceil((self.w/2)-#self.text/2), math.ceil(self.y+self.h/2)+ self.margintop, self.text, colour, self.foreColour )
 	end
 end
 
