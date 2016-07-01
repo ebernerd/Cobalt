@@ -88,39 +88,7 @@ function text.new( data, parent )
 	local self = setmetatable( data, text )
 
 	self.parent = parent
-	if not self.w then
-		self.w = self.parent.w
-		self.autow = "parent"
-	else
-		if type(self.w) == "string" then
-			self.w = cobalt.getPercentage( self.w )
-			self.autow = "perc:" .. self.w
-		end
-	end
-	if type(self.marginleft) == "string" then
-		self.marginleft = cobalt.getPercentage( self.marginleft )
-		self.automl = "perc:" .. self.marginleft
-	end
-	if type(self.marginright) == "string" then
-		self.marginright = cobalt.getPercentage( self.marginright )
-		self.automr = "perc:" .. self.marginright
-	end
-	if type(self.margintop) == "string" then
-		self.margintop = cobalt.getPercentage( self.margintop )
-		self.automt = "perc:" .. self.margintop
-	end
-	if type(self.marginbottom) == "string" then
-		self.marginbottom = cobalt.getPercentage( self.marginbottom )
-		self.automl = "perc:" .. self.marginbottom
-	end
-	if type(self.x) == "string" then
-		self.x = cobalt.getPercentage( self.x )
-		self.autox = "perc:" .. self.x
-	end
-	if type(self.y) == "string" then
-		self.y = cobalt.getPercentage( self.y )
-		self.autoy = "perc:" .. self.y
-	end
+	self:getPercenages()
 	if self.text then self.unformatted = self.text; self.text = formatText( self.unformatted, self.w or self.parent.w ) end
 	self:resize()
 	self.backColour = data.backColour or parent.backColour
@@ -182,7 +150,7 @@ function text:resize()
 	end
 	if self.automt:sub( 1, 4 ) == "perc" then
 		local perc = self.automt:match("perc:(%d+)")
-		self.margintop = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+		self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 	end
 	if self.automb:sub( 1, 4 ) == "perc" then
 		local perc = self.automb:match("perc:(%d+)")

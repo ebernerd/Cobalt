@@ -21,12 +21,7 @@ local radio = {
 }
 radio.__index = radio
 
-
-function radio.new( data, parent )
-	data = data or { }
-	local self = setmetatable( data, radio )
-	if not self.val then self.val = self.label end
-	self.parent = parent
+function radio:getPercentages()
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
 		self.automl = "perc:" .. self.marginleft
@@ -43,6 +38,14 @@ function radio.new( data, parent )
 		self.y = cobalt.getPercentage( self.y )
 		self.autoy = "perc:" .. self.y
 	end
+end
+
+function radio.new( data, parent )
+	data = data or { }
+	local self = setmetatable( data, radio )
+	if not self.val then self.val = self.label end
+	self.parent = parent
+	self:getPercentages()
 	self:resize()
 	self.state = data.state or parent.state
 	table.insert( parent.children, self )
@@ -70,6 +73,42 @@ function radio:draw()
 		self.parent.surf:drawPixel( math.ceil(self.x + self.marginleft), math.ceil(self.y + self.margintop), char, self.backColour, self.foreColour )
 		self.parent.surf:drawText( math.ceil(self.x+2 + self.marginleft), math.ceil(self.y + self.margintop), self.label, nil, self.foreColour )
 	end
+end
+
+function radio:setMargins( t, r, b, l )
+	if t then
+		self.margintop = t or self.margintop
+		if type(t) == "string" then
+			self:getPercentages()
+		else
+			self.automt = "none"
+		end
+	end
+	if r then
+		self.marginright = r or self.marginright
+		if type(r) == "string" then
+			self:getPercentages()
+		else
+			self.automr = "none"
+		end
+	end
+	if b then
+		self.margintop = b or self.margintop
+		if type(b) == "string" then
+			self:getPercentages()
+		else
+			self.automb = "none"
+		end
+	end
+	if l then
+		self.marginleft = l or self.marginleft
+		if type(l) == "string" then
+			self:getPercentages()
+		else
+			self.automl = "none"
+		end
+	end
+	self:resize()
 end
 
 function radio:resize()

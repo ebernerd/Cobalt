@@ -2,10 +2,20 @@ cui = { }
 os.loadAPI( "cobalt-ui/surface" )
 
 cui.roots = { }
-
+cui.styles = { }
 cui.elements = { }
 for i, v in pairs( fs.list( "cobalt-ui/elements" ) ) do
 	cui.elements[v:sub(1, #v-4)] = dofile("cobalt-ui/elements/" .. v)
+end
+
+function cui.loadStyles( path )
+	if fs.exists( path ) then
+		local t = dofile(path)
+		table.insert( cui.styles, t )
+		return t
+	else
+		error("file " .. path .. " does not exist")
+	end
 end
 
 function cui.update( dt )

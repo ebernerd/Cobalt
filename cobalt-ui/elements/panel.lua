@@ -70,7 +70,13 @@ end
 
 
 function panel.new( data, parent, isroot )
-	local self = setmetatable(data,panel)
+	local self
+	self = setmetatable(data,panel)
+	if data.style then
+		local t = data.style
+		self = setmetatable( t, panel )
+		data.style = nil
+	end
 	if not self.isroot then self.parent = parent end
 	self.children = { }
 

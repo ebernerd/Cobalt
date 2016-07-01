@@ -28,10 +28,7 @@ local input = {
 }
 input.__index = input
 
-function input.new( data, parent )
-	data = data or { }
-	local self = setmetatable( data, input )
-	self.parent = parent
+function input:getPercentages()
 	if type(self.w) == "string" then
 		self.w = cobalt.getPercentage( self.w )
 		self.autow = "perc:" .. self.w
@@ -52,6 +49,13 @@ function input.new( data, parent )
 		self.y = cobalt.getPercentage( self.y )
 		self.autoy = "perc:" .. self.y
 	end
+end
+
+function input.new( data, parent )
+	data = data or { }
+	local self = setmetatable( data, input )
+	self.parent = parent
+	self:getPercentages()
 	self:resize()
 	self.state = data.state or parent.state
 	table.insert( parent.children, self )
@@ -70,7 +74,7 @@ function input:resize()
 	end
 	if self.automt:sub( 1, 4 ) == "perc" then
 		local perc = self.automt:match("perc:(%d+)")
-		self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )-1
+		self.margintop = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )-1
 	end
 	if self.autox and self.autox:sub( 1, 4 ) == "perc" then
 		local perc = self.autox:match("perc:(%d+)")
@@ -82,6 +86,42 @@ function input:resize()
 	end
 end
 
+function input:setMargins( t, r, b, l )
+	if t then
+		self.margintop = t or self.margintop
+		if type(t) == "string" then
+			self:getPercentages()
+		else
+			self.automt = "none"
+		end
+	end
+	if r then
+		self.marginright = r or self.marginright
+		if type(r) == "string" then
+			self:getPercentages()
+		else
+			self.automr = "none"
+		end
+	end
+	if b then
+		self.margintop = b or self.margintop
+		if type(b) == "string" then
+			self:getPercentages()
+		else
+			self.automb = "none"
+		end
+	end
+	if l then
+		self.marginleft = l or self.marginleft
+		if type(l) == "string" then
+			self:getPercentages()
+		else
+			self.automl = "none"
+		end
+	end
+	self:resize()
+end
+
 function input:getAbsX()
 	return self.x + self.parent:getAbsX()-1 + self.marginleft
 end
@@ -90,7 +130,7 @@ function input:getAbsY()
 	return self.y + math.floor(self.parent:getAbsY())-1 + self.margintop
 end
 
-function input:update()
+function input:update( dt )
 	if self.active then
 		self.timer = self.timer + 0.1
 		if self.timer > 0.5 then
@@ -132,7 +172,7 @@ function input:draw()
 				self.parent.surf:drawText( math.floor(self.x+ self.marginleft), math.floor(self.y+ self.margintop), self.placeholder, bc, self.placholderColour )
 			end
 		end
-		if self.flash then
+		if self.flash and self.active then
 			self.parent.surf:drawText( math.floor(self.x+#t+self.marginleft), math.floor(self.y+self.margintop), "_", bc, fc )
 		end
 	end

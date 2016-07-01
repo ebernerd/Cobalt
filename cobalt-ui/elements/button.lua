@@ -23,14 +23,20 @@ local button = {
 }
 button.__index = button
 
-function button.new( data, parent )
-	data = data or { }
-	local self = setmetatable( data, button )
-	self.parent = parent
+function button:getPercentages()
 	if type(self.w) == "string" then
 		self.w = cobalt.getPercentage( self.w )
 		self.autow = "perc:" .. self.w
+	else
+		self.autow = "none"
 	end
+	if type(self.h) == "string" then
+		self.h = cobalt.getPercentage( self.h )
+		self.autoh = "perc:" .. self.h
+	else
+		self.autoh = "none"
+	end
+
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
 		self.automl = "perc:" .. self.marginleft
@@ -55,15 +61,72 @@ function button.new( data, parent )
 		self.y = cobalt.getPercentage( self.y )
 		self.autoy = "perc:" .. self.y
 	end
+end
+
+function button.new( data, parent )
+	data = data or { }
+	local self = setmetatable( data, button )
+	self.parent = parent
+	self:getPercentages()
 	self:resize()
 	self.state = data.state or parent.state
 	table.insert( parent.children, self )
 	return self
 end
 
+function button:setMargins( t, r, b, l )
+	if t then
+		self.margintop = t or self.margintop
+		if type(t) == "string" then
+			self:getPercentages()
+		else
+			self.automt = "none"
+		end
+	end
+	if r then
+		self.marginright = r or self.marginright
+		if type(r) == "string" then
+			self:getPercentages()
+		else
+			self.automr = "none"
+		end
+	end
+	if b then
+		self.margintop = b or self.margintop
+		if type(b) == "string" then
+			self:getPercentages()
+		else
+			self.automb = "none"
+		end
+	end
+	if l then
+		self.marginleft = l or self.marginleft
+		if type(l) == "string" then
+			self:getPercentages()
+		else
+			self.automl = "none"
+		end
+	end
+	self:resize()
+end
 
-
-function button:resize()
+function button:resize( w, h )
+	if w then
+		self.w = w or self.w
+		if type( self.w ) == "string" then
+			self:getPercentages()
+		else
+			self.autow = "none"
+		end
+	end
+	if h then
+		self.h = h or self.h
+		if type( self.h ) == "string" then
+			self:getPercentages()
+		else
+			self.autoh = "none"
+		end
+	end
 	if self.autow:sub( 1, 4 ) == "perc" then
 		local perc = self.autow:match("perc:(%d+)")
 		cobalt.setPercentage( perc )
@@ -100,7 +163,7 @@ function button:getAbsX()
 end
 
 function button:getAbsY()
-	return math.floor(self.y + self.parent:getAbsY()-1 + self.margintop)-1
+	return math.floor(self.y + self.parent:getAbsY() + self.margintop)-1
 end
 
 function button:draw()
