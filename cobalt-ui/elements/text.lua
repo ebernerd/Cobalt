@@ -98,7 +98,7 @@ function text.new( data, parent )
 	local self = setmetatable(data,text)
 
 	self.parent = parent
-	self:getPercenages()
+	self:getPercentages()
 	if self.text then self.unformatted = self.text; self.text = formatText( self.unformatted, self.w or self.parent.w ) end
 	self:resize()
 	self.backColour = data.backColour or parent.backColour
@@ -193,11 +193,11 @@ function text:draw()
 	if self.state == cobalt.state or self.state == "_ALL" then
 		if self.wrap == "right" then
 			for i = 1, #self.text do
-				self.parent.surf:drawText( (self.w-self.x+1) - math.floor( #self.text[i] )+math.ceil( self.marginright ), self.y + (i-1)+self.margintop, self.text[i], self.backColour, self.foreColour )
+				self.parent.surf:drawText((#self.text[i]-self.x+1) - math.floor( #self.text[i] )+math.ceil( self.marginright ), self.y + (i-1)+self.margintop, self.text[i], self.backColour, self.foreColour )
 			end
 		elseif self.wrap == "center" then
 			for i = 1, #self.text do
-				self.parent.surf:drawText( math.ceil( (self.w-self.x)/2 )+1 - math.ceil( #self.text[i]/2 )+math.ceil( self.marginleft), self.y + (i-1) + self.margintop, self.text[i], self.backColour, self.foreColour )
+				self.parent.surf:drawText( math.ceil( self.parent.w/2- #self.text[i]/2 )+math.ceil( self.marginleft), self.y + (i-1) + self.margintop, self.text[i], self.backColour, self.foreColour )
 			end
 		else
 			for i = 1, #self.text do

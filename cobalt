@@ -28,9 +28,30 @@ function cobalt.debug( item )
 end
 
 
+local function getFile( file, path )
+	local dl = http.get( "https://raw.githubusercontent.com/ebernerd/Cobalt/master/"..file )
+	if dl then
+		local h = dl.readAll()
+		dl.close()
+		return h
+	end
+	return false
+end
+
 local args = { ... }
 if args[1] == "version" then
 	print( "Cobalt " .. cobalt.version )
+	v = getFile( "version" )
+	if v then
+		if cobalt.version ~= v then
+			print( "Your Cobalt version is out of date!\nYour Version: " .. cobalt.version .. " | Current: " .. v )
+			print( "\nUse the command \"cobalt update\" to receive the newest update!" )
+		end
+	else
+		print( "Cobalt version checking is not available at this time" )
+	end
+elseif args[1] == "update" then
+	shell.run( "pastebin run h5h4fm3t" )
 elseif args[1] == "help" then
 	print( "You can find help resources here: ")
 	print( "https://github.com/ebernerd/Cobalt/wiki")
@@ -146,6 +167,13 @@ cobalt.graphics.line = paintutils.drawLine
 
 cobalt.graphics.setBackgroundColour = term.setBackgroundColour
 cobalt.graphics.setColour = term.setTextColour
+
+function cobalt.graphics.reset()
+	term.setBackgroundColour( colours.black )
+	term.setTextColour( colours.white )
+	term.clear()
+	term.setCursorPos( 1, 1 )
+end
 
 function cobalt.graphics.lighten( colour )
 	return graphics_lighten[colour]
