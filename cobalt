@@ -10,6 +10,7 @@ cobalt = {
 	rednet = {
 
 	},
+	math = { },
 	mouse = { },
 	table = { },
 	state = "MAIN",
@@ -191,7 +192,7 @@ function cobalt.keyboard.isDown( key )
 end
 
 
-function cobalt.round(num, idp)
+function cobalt.math.round(num, idp)
 	local mult = 10^(idp or 0)
 	return math.floor(num * mult + 0.5) / mult
 end

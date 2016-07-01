@@ -53,7 +53,16 @@ end
 
 function input.new( data, parent )
 	data = data or { }
-	local self = setmetatable( data, input )
+	if data.style then
+		local t = data.style
+		for k, v in pairs( t ) do
+			if not data[k] then
+				data[k] = v
+			end
+		end
+		data.style = nil
+	end
+	local self = setmetatable(data,input)
 	self.parent = parent
 	self:getPercentages()
 	self:resize()

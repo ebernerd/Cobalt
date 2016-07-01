@@ -42,7 +42,16 @@ end
 
 function radio.new( data, parent )
 	data = data or { }
-	local self = setmetatable( data, radio )
+	if data.style then
+		local t = data.style
+		for k, v in pairs( t ) do
+			if not data[k] then
+				data[k] = v
+			end
+		end
+		data.style = nil
+	end
+	local self = setmetatable(data,radio)
 	if not self.val then self.val = self.label end
 	self.parent = parent
 	self:getPercentages()

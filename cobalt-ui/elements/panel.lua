@@ -71,12 +71,16 @@ end
 
 function panel.new( data, parent, isroot )
 	local self
-	self = setmetatable(data,panel)
 	if data.style then
 		local t = data.style
-		self = setmetatable( t, panel )
+		for k, v in pairs( t ) do
+			if not data[k] then
+				data[k] = v
+			end
+		end
 		data.style = nil
 	end
+	self = setmetatable(data,panel)
 	if not self.isroot then self.parent = parent end
 	self.children = { }
 

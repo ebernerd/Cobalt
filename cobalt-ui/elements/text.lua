@@ -85,7 +85,17 @@ function text:getPercentages()
 end
 
 function text.new( data, parent )
-	local self = setmetatable( data, text )
+	data = data or { }
+	if data.style then
+		local t = data.style
+		for k, v in pairs( t ) do
+			if not data[k] then
+				data[k] = v
+			end
+		end
+		data.style = nil
+	end
+	local self = setmetatable(data,text)
 
 	self.parent = parent
 	self:getPercenages()
