@@ -1,4 +1,6 @@
-# Cobalt - ComputerCraft called you back.
+# Cobalt - ComputerCraft called you back.  
+**Before you dive in, it is *very* much recommended that you read the [documentation](https://github.com/ebernerd/Cobalt/wiki). This will give you a lot of help!**
+
 Cobalt is a wrapper for ComputerCraft that allows it to run in a callback fashion, rather than an event-based way. Cobalt aims to make ComputerCraft similar to Love2D programming.
 
 Cobalt also has optional packages, like [Cobalt-UI](https://github.com/ebernerd/Cobalt/wiki/Cobalt-UI), which adds a full UI library into your projects.
