@@ -113,10 +113,8 @@ function input:draw()
 			fc = self.foreActiveColour
 		end
 		self.parent.surf:drawLine( math.floor(self.x + self.marginleft), math.floor(self.y + self.margintop), math.floor(self.x + self.marginleft) + self.w, math.floor(self.y + self.margintop), " ", bc, fc )
-		local t = self.text
-		if #self.text > self.w-1 then
-			t = self.text:sub( #self.text-self.w+1, #self.text )
-		end
+		--local t = (self.text:sub( #self.text-self.w+self.scroll )):sub(1, self.w)
+		local t = self.text:sub( self.scroll, self.scroll + self.w )
 		if #self.text > 0 then
 			if self.mask ~= ""  then
 				local mskstr = ""
@@ -133,7 +131,12 @@ function input:draw()
 			end
 		end
 		if self.flash then
-			self.parent.surf:drawText( math.floor(self.x+#t+self.marginleft), math.floor(self.y+self.margintop), "_", bc, fc )
+			--self.parent.surf:drawText( math.floor(self.x+#t+ self.marginleft), math.floor(self.y+ self.margintop), "_", bc, fc )
+			local pixelchar = " "
+			if self.text:sub( self.pos, self.pos ) ~= "" then
+				pixelchar = self.text:sub(self.pos, self.pos)
+			end
+			self.parent.surf:drawPixel( math.floor(self.drawx), math.floor(self.y+ self.margintop), pixelchar, fc, bc )
 		end
 	end
 end
@@ -154,18 +157,48 @@ function input:mousereleased( x, y, button )
 end
 
 function input:keypressed( keycode, key )
+
 	if self.active then
 		if self.state == cobalt.state or self.state == "_ALL" then
 			self.timer = 0
 			self.flash = true
 			if keycode == 14 then
-				self.text = self.text:sub(1, #self.text-1 )
-			elseif keycode == 211 then
+				if self.pos > 1 then
 
+					self.pos = self.pos - 1
+
+					self.text = self.text:sub( 1, self.pos-1 ) .. self.text:sub(self.pos+1, #self.text)
+					if self.drawx-self.x == self.marginleft then
+						self.scroll = self.scroll-1
+					end
+				end
+			elseif keycode == 211 then
+				if self.pos < #self.text+1 then
+					self.text = self.text:sub( 1, self.pos-1 ) .. self.text:sub(self.pos+1, #self.text)
+				end
+			elseif keycode == 203 then
+				if self.pos > 1 then
+					self.pos = self.pos - 1
+					if self.drawx-self.x == self.marginleft then
+						self.scroll = self.scroll-1
+					end
+				end
+			elseif keycode == 205 then
+				if self.pos < #self.text+1 then
+					self.pos = self.pos + 1
+					if self.drawx - self.x == self.w+self.marginleft then
+						self.scroll = self.scroll + 1
+					end
+				end
 			elseif keycode == 28 then
 				self.active = false
 				if self.oncomplete then self:oncomplete() end
 			end
+			local s = 0
+			if self.scroll == 0 then
+				s = 1
+			end
+			self.drawx = self.pos - (self.scroll) - (self.x-self.marginleft-1)+s
 		end
 	end
 end
@@ -173,7 +206,15 @@ end
 function input:textinput( t )
 	if self.state == cobalt.state or self.state == "_ALL" then
 		if self.active and (#self.text < self.maxlength or self.maxlength < 0) then
-			self.text = self.text .. t
+
+			if self.drawx - self.x == self.w+self.marginleft-1 then
+				self.scroll = self.scroll + 1
+			end
+
+			self.drawx = self.pos - self.scroll - (self.x-self.marginleft-1)+1
+
+			self.pos = self.pos + 1
+			self.text = self.text:sub( 1, self.pos-1 ) .. t .. self.text:sub(self.pos, #self.text)
 		end
 	end
 end

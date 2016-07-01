@@ -28,33 +28,18 @@ local panel = {
 }
 panel.__index = panel
 
-function panel.new( data, parent, isroot )
-	local self = setmetatable(data,panel)
-
-	if not isroot then
-		self:resize()
-	end
-
-	self.children = { }
-	self.bw = self.w
-	self.bh = self.h
-	if isroot then
-		table.insert( cui.roots, self )
-		self.isroot = true
-	else
-		if not parent then
-			error( "Expected parent object")
-		end
-		table.insert( parent.children, self )
-		self.parent = parent
-	end
+function panel:getPercentages()
 	if type(self.w) == "string" then
 		self.w = cobalt.getPercentage( self.w )
 		self.autow = "perc:" .. self.w
+	else
+		self.autow = "none"
 	end
 	if type(self.h) == "string" then
 		self.h = cobalt.getPercentage( self.h )
 		self.autoh = "perc:" .. self.h
+	else
+		self.autoh = "none"
 	end
 
 	if type(self.marginleft) == "string" then
@@ -81,84 +66,173 @@ function panel.new( data, parent, isroot )
 		self.y = cobalt.getPercentage( self.y )
 		self.autoy = "perc:" .. self.y
 	end
+end
 
+
+function panel.new( data, parent, isroot )
+	local self = setmetatable(data,panel)
+	if not self.isroot then self.parent = parent end
+	self.children = { }
+
+	self:getPercentages()
+
+	self.bw = self.w
+	self.bh = self.h
+
+
+
+	if isroot then
+		table.insert( cui.roots, self )
+		self.isroot = true
+	else
+		if not parent then
+			error( "Expected parent object")
+		end
+		table.insert( parent.children, self )
+	end
 
 	self:resize()
 	return self
 end
 
-function panel:resize()
+function panel:resize( w, h )
+	if w then
+		self.w = w or self.w
+		if type( self.w ) == "string" then
+			self:getPercentages()
+		else
+			self.autow = "none"
+		end
+	end
+	if h then
+		self.h = h or self.h
+		if type( self.h ) == "string" then
+			self:getPercentages()
+		else
+			self.autoh = "none"
+		end
+	end
 	if self.autow:sub( 1, 4 ) == "perc" then
 		local perc = self.autow:match("perc:(%d+)")
 		if self.parent then
 			self.w = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
 		else
-			self.w = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.w = math.floor((cobalt.window.getWidth()) * cobalt.setPercentage( perc ) )
+		end
+	end
+	if self.autoh:sub( 1, 4 ) == "perc" then
+		local perc = self.autoh:match("perc:(%d+)")
+		if self.parent then
+			self.h = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+		else
+			self.h = math.floor((cobalt.window.getHeight()-1) * cobalt.setPercentage( perc ) )
 		end
 	end
 	if self.automl and self.automl:sub( 1, 4 ) == "perc" then
 		local perc = self.automl:match("perc:(%d+)")
 		if self.parent then
-			self.marginleft = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+			self.marginleft = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
 		else
-			self.marginleft = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.marginleft = math.floor( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
 		end
 	end
 	if self.automr and self.automr:sub( 1, 4 ) == "perc" then
 		local perc = self.automr:match("perc:(%d+)")
 		if self.parent then
-			self.marginright = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+			self.marginright = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
 		else
-			self.marginright = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.marginright = math.floor( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
 		end
 	end
 	if self.automt and self.automt:sub( 1, 4 ) == "perc" then
 		local perc = self.automt:match("perc:(%d+)")
 		if self.parent then
-			self.margintop = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+			self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 		else
-			self.margintop = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.margintop = math.floor( cobalt.window.getHeight() * cobalt.setPercentage( perc ) )
 		end
 	end
 	if self.automb and self.automb:sub( 1, 4 ) == "perc" then
 		local perc = self.automb:match("perc:(%d+)")
 		if self.parent then
-			self.marginbottom = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+			self.marginbottom = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 		else
-			self.marginbottom = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.marginbottom = math.floor( cobalt.window.getHeight() * cobalt.setPercentage( perc ) )
 		end
 	end
 	if self.autox and self.autox and self.autox:sub( 1, 4 ) == "perc" then
 		local perc = self.autox:match("perc:(%d+)")
 		if self.parent then
-			self.x = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+			self.x = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
 		else
-			self.x = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.x = math.floor( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
 		end
 	end
 	if self.autoy and self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
 		local perc = self.autoy:match("perc:(%d+)")
 		if self.parent then
-			self.y = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+			self.y = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 		else
-			self.y = math.ceil( cobalt.window.getWidth() * cobalt.setPercentage( perc ) )
+			self.y = math.floor( cobalt.window.getHeight() * cobalt.setPercentage( perc ) )
 		end
 	end
+	if self.children then
+		for i, v in pairs( self.children ) do
+			v:resize()
+		end
+	end
+	self.surf = nil
 	self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
+end
+
+function panel:setMargins( t, r, b, l )
+	if t then
+		self.margintop = t or self.margintop
+		if type(t) == "string" then
+			self:getPercentages()
+		else
+			self.automt = "none"
+		end
+	end
+	if r then
+		self.marginright = r or self.marginright
+		if type(r) == "string" then
+			self:getPercentages()
+		else
+			self.automr = "none"
+		end
+	end
+	if b then
+		self.margintop = b or self.margintop
+		if type(b) == "string" then
+			self:getPercentages()
+		else
+			self.automb = "none"
+		end
+	end
+	if l then
+		self.marginleft = l or self.marginleft
+		if type(l) == "string" then
+			self:getPercentages()
+		else
+			self.automl = "none"
+		end
+	end
+	self:resize()
 end
 
 function panel:getAbsX()
 	if not self.isroot then
-		return self.x + self.parent:getAbsX()-1
+		return self.x + self.parent:getAbsX()-1 + self.marginleft
 	end
-	return self.x
+	return self.x + self.marginleft
 end
 
 function panel:getAbsY()
 	if not self.isroot then
-		return self.y + math.floor(self.parent:getAbsY())-1
+		return self.y + math.floor(self.parent:getAbsY())-1 + self.margintop
 	end
-	return self.y
+	return self.y + self.margintop
 end
 
 function panel:getAbsW()
@@ -176,6 +250,38 @@ end
 function panel:add( type, data )
 	return cui.elements[type].new( data, self, false )
 end
+
+function panel:getCheckResults( group )
+	local results = { }
+	group = group or "_ALL"
+	for k, v in pairs( self.children ) do
+		if v.type and v.type == "checkbox" then
+			if v.group == group or group == "_ALL" then
+				if v.selected then
+					results[#results+1] = v.val
+				end
+			end
+		end
+	end
+	return results
+end
+
+function panel:getRadioResults( group )
+	local results = { }
+	group = group or "_ALL"
+	for k, v in pairs( self.children ) do
+		if v.type and v.type == "radio" then
+			if v.group == group or group == "_ALL" then
+				if v.selected then
+					results[#results+1] = v.val
+				end
+			end
+		end
+	end
+	return results
+end
+
+
 
 function panel:bringToFront()
 
@@ -218,16 +324,10 @@ end
 
 function panel:update( dt )
 	if self.w ~= self.bw then
-		for i, v in pairs( self.children ) do
-			if v.onparentresize then v:resize() end
-		end
 		self.bw = self.w
 		self:resize()
 	end
 	if self.h ~= self.bh then
-		for i, v in pairs( self.children ) do
-			if v.resize then v:resize() end
-		end
 		self.bh = self.h
 		self:resize()
 	end
@@ -249,7 +349,7 @@ function panel:draw( )
 		if self.isroot then
 			self.surf:render(term, self.x+self.marginleft, self.y+self.margintop, self.scrollx, self.scrolly, self.scrollx + self.w, self.scrolly+self.h)
 		else
-			self.parent.surf:drawSurface(self.x+self.marginleft, self.y+self.marginright, self.surf)
+			self.parent.surf:drawSurface(self.x+self.marginleft, self.y+self.margintop, self.surf)
 		end
 	end
 end

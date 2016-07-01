@@ -4,10 +4,6 @@ cobalt = {
 	event = { },
 	window = { },
 	_mainloop = true,
-	vars = {
-		backgroundcolour = colours.black,
-		textcolour = colours.white
-	},
 	keyboard = {
 		keysdown = { },
 	},
@@ -24,12 +20,9 @@ cobalt = {
 cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
 
 function cobalt.debug( item )
-	term.setBackgroundColour( colours.black )
-	term.setTextColour( colours.white )
-	term.clear()
-	term.setCursorPos( 1,1 )
-	print( "COBALT DEBUG" )
-	print( item )
+	local f = fs.open( ".cobaltdebug", "w" )
+	f:write(item)
+	f:close()
 	cobalt.exit()
 end
 
@@ -150,14 +143,7 @@ cobalt.graphics.rectangle = cobalt.graphics.rect
 cobalt.graphics.pixel = paintutils.drawPixel
 cobalt.graphics.line = paintutils.drawLine
 
---[=[function cobalt.graphics.setBackgroundColour( colour )
-	cobalt.vars.backgroundcolour = colour
-end--]=]
 cobalt.graphics.setBackgroundColour = term.setBackgroundColour
-
---[=[function cobalt.graphics.setColour( colour )
-	cobalt.vars.textcolour = colour
-end--]=]
 cobalt.graphics.setColour = term.setTextColour
 
 function cobalt.graphics.lighten( colour )
@@ -258,7 +244,8 @@ cobalt.filesystem.isDirectory = fs.isDir
 
 cobalt.raw = false
 
-function cobalt.exit( msg )
+function cobalt.exit( ... )
+	local msgs = { ... }
 	cobalt._mainloop = false
 	for i = 1, 10 do
 		term.setBackgroundColour(colours.black)
@@ -266,19 +253,17 @@ function cobalt.exit( msg )
 		term.clear()
 		term.setCursorPos( 1, 1 )
 	end
-	print( msg )
+	if #msgs >= 1 then
+		for i =1, #msgs do
+			print( msgs[i] )
+		end
+	end
 	return true
 end
 
-function cobalt._draw()
-	term.setBackgroundColour( cobalt.vars.backgroundcolour )
+function cobalt.initLoop( runOnce )
 	term.clear()
 	term.setCursorPos( 1, 1 )
-	term.setTextColour( cobalt.vars.textcolour )
-	cobalt.draw()
-end
-
-function cobalt.initLoop( runOnce )
 	while cobalt._mainloop do
 
 		local e, a, b, c, d, e
@@ -307,7 +292,7 @@ function cobalt.initLoop( runOnce )
 			if a == cobalt.updatetimer then
 				if cobalt.update then cobalt.update( cobalt.updatespeed ) end
 				cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
-				cobalt._draw()
+				if cobalt.draw then cobalt.draw() end
 			end
 		end
 

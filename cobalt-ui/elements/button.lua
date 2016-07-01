@@ -71,36 +71,36 @@ function button:resize()
 	end
 	if self.automl:sub( 1, 4 ) == "perc" then
 		local perc = self.automl:match("perc:(%d+)")
-		self.marginleft = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		self.marginleft = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
 	end
 	if self.automr:sub( 1, 4 ) == "perc" then
 		local perc = self.automr:match("perc:(%d+)")
-		self.marginright = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		self.marginright = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
 	end
 	if self.automt:sub( 1, 4 ) == "perc" then
 		local perc = self.automt:match("perc:(%d+)")
-		self.margintop = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+		self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 	end
 	if self.automb:sub( 1, 4 ) == "perc" then
 		local perc = self.automb:match("perc:(%d+)")
-		self.marginbottom = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+		self.marginbottom = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 	end
 	if self.autox and self.autox:sub( 1, 4 ) == "perc" then
 		local perc = self.autox:match("perc:(%d+)")
-		self.x = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+		self.x = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
 	end
 	if self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
 		local perc = self.autoy:match("perc:(%d+)")
-		self.y = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+		self.y = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
 	end
 end
 
 function button:getAbsX()
-	return self.x + self.parent:getAbsX()-1
+	return math.floor(self.x + self.parent:getAbsX() + self.marginleft)-1
 end
 
 function button:getAbsY()
-	return self.y + self.parent:getAbsY()-1
+	return math.floor(self.y + self.parent:getAbsY()-1 + self.margintop)-1
 end
 
 function button:draw()
@@ -113,18 +113,20 @@ function button:draw()
 			colour = cobalt.g.lighten( self.backColour )
 		end
 		if self.h == 1 then
-			self.parent.surf:drawLine( self.x + self.marginleft, self.y+1 + self.margintop, self.x + self.w, self.y+1, " ", colour, self.foreColour )
+			self.parent.surf:drawLine( self.x + self.marginleft, self.y+1 + self.margintop, self.x + self.w+self.marginleft, self.y+1, " ", colour, self.foreColour )
 		else
-			self.parent.surf:fillRect( self.x, self.y+ self.margintop, self.x + self.w, self.y + self.h, " ", colour, self.foreColour )
+			self.parent.surf:fillRect( self.x + self.marginleft, self.y + self.margintop, self.x + self.w+self.marginleft, self.y + self.h, " ", colour, self.foreColour )
 		end
-		self.parent.surf:drawText( self.x+math.ceil((self.w/2)-#self.text/2), math.ceil(self.y+self.h/2)+ self.margintop, self.text, colour, self.foreColour )
+		self.parent.surf:drawText( self.x+math.ceil((self.w/2)-#self.text/2 +  self.marginleft), math.ceil(self.y+self.h/2)+ self.margintop, self.text, colour, self.foreColour )
 	end
 end
 
 function button:mousepressed( x, y, button )
 	if self.state == cobalt.state or self.state == "_ALL" and self.visible then
-		if button == 1 and x >= self:getAbsX() and x <= self:getAbsX() + self.w and y >= self:getAbsY() and y <= self:getAbsY() + self.h then
-			self.selected = true
+		if button == 1 then
+			if x >= self:getAbsX() and x <= self:getAbsX() + self.w and y >= self:getAbsY() and y <= self:getAbsY() + self.h then
+				self.selected = true
+			end
 		end
 	end
 end
