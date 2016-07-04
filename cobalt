@@ -1,4 +1,4 @@
-cobalt = {
+local cobalt = {
 	graphics = { },
 	filesystem = { },
 	event = { },
@@ -22,9 +22,7 @@ cobalt = {
 	updatespeed = 0.1
 }
 
-if not surface then
-	os.loadAPI("cobalt-lib/surface")
-end
+cobalt.surface = dofile( "cobalt-lib/surface" )
 
 cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
 
@@ -139,15 +137,15 @@ local graphics_darken = {
 function cobalt.graphics.print( text, x, y, colour, backColour )
 	text = tostring(text) or "Some Text"
 	if cobalt.application.view then
-		cobalt.application.view:drawText( x, y, text, colour, backColour )
+		cobalt.application.view:drawText( cobalt.math.round(x), cobalt.math.round(y), text, colour, backColour )
 	end
 end
 function cobalt.graphics.rect( mode, x, y, w, h, colour )
 	if cobalt.application.view then
 		if mode == "fill" then
-			cobalt.application.view:fillRect( x, y, w+x, h+y, " ", colour )
+			cobalt.application.view:fillRect( cobalt.math.round(x), cobalt.math.round(y), cobalt.math.round(w+x), cobalt.math.round(h+y), " ", colour )
 		elseif mode == "line" then
-			cobalt.application.view:drawRect( x, y, w+x, h+y, " ", colour )
+			cobalt.application.view:drawRect( cobalt.math.round(x), cobalt.math.round(y), cobalt.math.round(w+x), cobalt.math.round(h+y), " ", colour )
 		end
 	end
 end
@@ -163,7 +161,7 @@ function cobalt.graphics.center( text, y, offset, colour, backColour )
 		local lines = {[1] = ""}
 		local line = 1
 		for i=1, #t do
-			if #tostring(lines[line].." "..t[i]) > dx then
+			if #tostring(lines[line].." "..t[i]) > cobalt.window.getWidth() then
 				lines[line] = lines[line] .. "\n"
 				line = line + 1
 				lines[line] = " " .. t[i]
@@ -173,7 +171,7 @@ function cobalt.graphics.center( text, y, offset, colour, backColour )
 		end
 		y = y or math.ceil(dy/2-#lines/2)
 		for i = 1, #lines do
-			cobalt.application.view:drawText( dx/2-#lines[i]/2, y+(i-1), lines[i], colour, backColour )
+			cobalt.application.view:drawText( cobalt.math.round(cobalt.window.getWidth()/2-#lines[i]/2), cobalt.math.round(y+(i-1)), lines[i], colour, backColour )
 		end
 	end
 end
@@ -331,7 +329,7 @@ end
 function cobalt.initLoop( runOnce )
 	term.clear()
 	term.setCursorPos( 1, 1 )
-	cobalt.application.view = surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", cobalt.application.backColour, cobalt.application.foreColour )
+	cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", cobalt.application.backColour, cobalt.application.foreColour )
 	while cobalt._mainloop do
 
 		local e, a, b, c, d, e

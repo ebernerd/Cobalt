@@ -192,7 +192,7 @@ function panel:resize( w, h )
 		end
 	end
 	self.surf = nil
-	self.surf = surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
+	self.surf = cobalt.surface.create( self.w, self.h, " ", self.backColour, self.foreColour )
 end
 
 function panel:setMargins( t, r, b, l )
