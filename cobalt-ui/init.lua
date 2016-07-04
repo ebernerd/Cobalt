@@ -1,5 +1,5 @@
 cui = { }
-os.loadAPI( "cobalt-ui/surface" )
+os.loadAPI( "../cobalt-lib/surface" )
 
 cui.roots = { }
 cui.styles = { }

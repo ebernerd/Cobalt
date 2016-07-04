@@ -10,13 +10,21 @@ cobalt = {
 	rednet = {
 
 	},
+	application = {
+		backColour = colours.black,
+		foreColour = colours.white,
+	},
 	math = { },
 	mouse = { },
 	table = { },
-	state = "MAIN",
-	version = "1.0",
+	state = "Main",
+	version = "1.1_0",
 	updatespeed = 0.1
 }
+
+if not surface then
+	os.loadAPI("cobalt-lib/surface")
+end
 
 cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
 
@@ -128,52 +136,64 @@ local graphics_darken = {
 }
 
 --[=[ GRAPHICS FUNCTIONS ]=]--
-function cobalt.graphics.print( text, x, y, colour )
-	term.setTextColour( colour or term.getTextColour() )
-	term.setCursorPos( x, y )
-	print( text )
-end
-function cobalt.graphics.write( text, x, y, colour )
-	term.setTextColour( colour or term.getTextColour() )
-	term.setCursorPos( x, y )
-	write( text )
-end
-function cobalt.graphics.rect( mode, x, y, w, h, colour )
-	if mode == "fill" then
-		return paintutils.drawFilledBox( x, y, x+w, y+h, colour )
-	elseif mode == "line" then
-		return paintutils.drawBox( x, y, x+w, y+h, colour )
+function cobalt.graphics.print( text, x, y, colour, backColour )
+	text = tostring(text) or "Some Text"
+	if cobalt.application.view then
+		cobalt.application.view:drawText( x, y, text, colour, backColour )
 	end
 end
-function cobalt.graphics.center( text, y, offset )
-	text = text or "Some Text"
+function cobalt.graphics.rect( mode, x, y, w, h, colour )
+	if cobalt.application.view then
+		if mode == "fill" then
+			cobalt.application.view:fillRect( x, y, w+x, h+y, " ", colour )
+		elseif mode == "line" then
+			cobalt.application.view:drawRect( x, y, w+x, h+y, " ", colour )
+		end
+	end
+end
+function cobalt.graphics.center( text, y, offset, colour, backColour )
+	text = tostring(text) or "Some Text"
 	y = y or 1
 	offset = offset or 0
-	cobalt.graphics.print( text, (cobalt.window.getWidth()/2-#text/2)-offset, y )
+	if cobalt.application.view then
+		local t = {}
+		for i in string.gmatch( text, "%S+" ) do
+			t[#t+1] = i
+		end
+		local lines = {[1] = ""}
+		local line = 1
+		for i=1, #t do
+			if #tostring(lines[line].." "..t[i]) > dx then
+				lines[line] = lines[line] .. "\n"
+				line = line + 1
+				lines[line] = " " .. t[i]
+			else
+				lines[line] = lines[line] .. " " .. t[i]
+			end
+		end
+		y = y or math.ceil(dy/2-#lines/2)
+		for i = 1, #lines do
+			cobalt.application.view:drawText( dx/2-#lines[i]/2, y+(i-1), lines[i], colour, backColour )
+		end
+	end
 end
-function cobalt.graphics.centerInArea( text, x1, y1, x2, y2 )
-	text = text or "Some Text"
-	x1 = x1 or 1
-	x2 = x2 or cobalt.window.getWidth()
-	y1 = y1 or 1
-	y2 = y2 or cobalt.window.getHeight()
-	cobalt.graphics.print( text, (x1+x2)/2-#text/2, (y1+y2)/2 )
-end
-
 
 cobalt.graphics.rectangle = cobalt.graphics.rect
-cobalt.graphics.pixel = paintutils.drawPixel
-cobalt.graphics.line = paintutils.drawLine
+
+function cobalt.graphics.pixel( x, y, colour )
+	--if cobalt.application.view then
+		cobalt.application.view:drawPixel( cobalt.math.round(x), cobalt.math.round(y), " ", colour, colour )
+	--end
+end
+
+function cobalt.graphics.line( x1, y1, x2, y2, backColour, colour )
+	if cobalt.application.view then
+		cobalt.application.view:drawLine( cobalt.math.round(x1), cobalt.math.round(y1), cobalt.math.round(x2), cobalt.math.round(y2), " ", backColour, colour )
+	end
+end
 
 cobalt.graphics.setBackgroundColour = term.setBackgroundColour
 cobalt.graphics.setColour = term.setTextColour
-
-function cobalt.graphics.reset()
-	term.setBackgroundColour( colours.black )
-	term.setTextColour( colours.white )
-	term.clear()
-	term.setCursorPos( 1, 1 )
-end
 
 function cobalt.graphics.lighten( colour )
 	return graphics_lighten[colour]
@@ -196,6 +216,24 @@ function cobalt.window.getHeight()
 end
 
 cobalt.window.getSize = term.getSize
+
+--[=[ MOUSE FUNCTIONS ]=]--
+function cobalt._mousepressed( x, y, button )
+	cobalt.mouse[button] = true
+
+	if cobalt.mousepressed then cobalt.mousepressed( x, y, button ) end
+end
+
+function cobalt._mousereleased( x, y, button )
+	cobalt.mouse[button] = false
+
+	if cobalt.mousereleased then cobalt.mousereleased( x, y, button ) end
+end
+
+function cobalt.mouse.isDown( button )
+	return cobalt.mouse[button]
+end
+
 
 --[=[KEYBOARD FUNCTIONS]=]--
 function cobalt._keypressed( key, keycode )
@@ -293,6 +331,7 @@ end
 function cobalt.initLoop( runOnce )
 	term.clear()
 	term.setCursorPos( 1, 1 )
+	cobalt.application.view = surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", cobalt.application.backColour, cobalt.application.foreColour )
 	while cobalt._mainloop do
 
 		local e, a, b, c, d, e
@@ -321,7 +360,7 @@ function cobalt.initLoop( runOnce )
 			if a == cobalt.updatetimer then
 				if cobalt.update then cobalt.update( cobalt.updatespeed ) end
 				cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
-				if cobalt.draw then cobalt.draw() end
+				if cobalt.draw then if cobalt.application.view then cobalt.application.view:clear(" ", cobalt.application.backColour, cobalt.application.foreColour ); end cobalt.draw(); if cobalt.application.view then cobalt.application.view:render() end end
 			end
 		end
 
@@ -333,6 +372,8 @@ end
 function cobalt.initOnce()
 	cobalt.initLoop( true )
 end
+
+cobalt.init = cobalt.initLoop
 
 
 return cobalt

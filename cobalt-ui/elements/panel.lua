@@ -357,7 +357,11 @@ function panel:draw( )
 			if v.draw then v:draw() end
 		end
 		if self.isroot then
-			self.surf:render(term, self.x+self.marginleft, self.y+self.margintop, self.scrollx, self.scrolly, self.scrollx + self.w, self.scrolly+self.h)
+			if cobalt.application.view then
+				cobalt.application.view:drawSurface( self.x + self.marginleft, self.y + self.margintop, self.surf )
+			else
+				self.surf:render(term, self.x+self.marginleft, self.y+self.margintop, self.scrollx, self.scrolly, self.scrollx + self.w, self.scrolly+self.h)
+			end
 		else
 			self.parent.surf:drawSurface(self.x+self.marginleft, self.y+self.margintop, self.surf)
 		end
