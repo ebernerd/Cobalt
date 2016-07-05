@@ -276,7 +276,7 @@ function panel:update( dt )
 		self:resize()
 	end
 	for i, v in pairs( self.children ) do
-		if v.update then v:update() end
+		if v.update then v:update(dt) end
 	end
 
 end
@@ -319,7 +319,13 @@ function panel:mousepressed( x, y, button )
 	end
 end
 
-
+function panel:paste( text )
+	for i, v in pairs( self.children ) do
+		if v.paste then
+			v:paste( text )
+		end
+	end
+end
 
 function panel:mousereleased( x, y, button )
 

@@ -146,18 +146,21 @@ function button:draw()
 			colour = cobalt.g.lighten( self.backColour )
 		end
 		if self.h == 1 then
-			self.parent.surf:drawLine( self.x + self.marginleft, self.y+1 + self.margintop, self.x + self.w+self.marginleft, self.y+1, " ", colour, self.foreColour )
+			self.parent.surf:drawLine( self.x + self.marginleft, self.y + self.margintop, self.x + self.w+self.marginleft, self.y, " ", colour, self.foreColour )
+			self.parent.surf:drawText( self.x+math.ceil((self.w/2)-#self.text/2 +  self.marginleft),self.y+ self.margintop, self.text, colour, self.foreColour )
 		else
 			self.parent.surf:fillRect( self.x + self.marginleft, self.y + self.margintop, self.x + self.w+self.marginleft, self.y + self.h, " ", colour, self.foreColour )
+			self.parent.surf:drawText( self.x+math.ceil((self.w/2)-#self.text/2 +  self.marginleft), math.ceil(self.y+self.h/2)+ self.margintop, self.text, colour, self.foreColour )
 		end
-		self.parent.surf:drawText( self.x+math.ceil((self.w/2)-#self.text/2 +  self.marginleft), math.ceil(self.y+self.h/2)+ self.margintop, self.text, colour, self.foreColour )
 	end
 end
 
 function button:mousepressed( x, y, button )
 	if self.state == cobalt.state or self.state == "_ALL" and self.visible then
 		if button == 1 then
-			if x >= self:getAbsX() and x <= self:getAbsX() + self.w and y >= self:getAbsY() and y <= self:getAbsY() + self.h then
+			local h = self.h
+			if self.h == 1 then h = 0 end
+			if x >= self:getAbsX() and x <= self:getAbsX() + self.w and y >= self:getAbsY() and y <= self:getAbsY() + h then
 				self.selected = true
 			end
 		end
@@ -166,7 +169,9 @@ end
 
 function button:mousereleased( x, y, button )
 	if self.state == cobalt.state or self.state == "_ALL" and self.visible then
-		if button == 1 and x >= self:getAbsX() and x <= self:getAbsX() + self.w and y >= self:getAbsY() and y <= self:getAbsY() + self.h then
+		local h = self.h
+		if self.h == 1 then h = 0 end
+		if button == 1 and x >= self:getAbsX() and x <= self:getAbsX() + self.w and y >= self:getAbsY() and y <= self:getAbsY() + h then
 			if self.selected then
 				if self.onclick then
 					self.onclick()

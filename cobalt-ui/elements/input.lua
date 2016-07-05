@@ -1,33 +1,114 @@
 local input = {
 	x = 1,
 	y = 1,
-	w = 25,
-	backPassiveColour = colours.white,
-	backActiveColour = colours.white,
-	forePassiveColour = colours.lightGrey,
+	w = 10,
+	backPassiveColour = colours.lightGrey,
+	backActiveColour = colours.lightGrey,
+	forePassiveColour = colours.grey,
 	foreActiveColour = colours.black,
-	placeholderColour = colours.lightGrey,
+	placeholderColour = colours.grey,
 	placeholder = "",
+	mask = false,
+	pos = 1,
+	drawpos= 1,
+	scroll = 1,
+
 	text = "",
-	mask = "",
+
 	active = false,
-	timer = 0,
-	flash = false,
-	type = "input",
+
 	autox = "",
 	autoy = "",
-	automl = "",
-	automt = "",
 	autow = "",
+	automt = "",
+	automl = "",
 	marginleft = 0,
 	margintop = 0,
+
+	displaytext = "",
+
 	maxlength = -1,
-	pos = 1,
-	scroll = 0,
-	drawx = 0,
-	tabindex = 1,
+
+	visible = true,
+
+	cfl = 0,
+	flash = false,
 }
 input.__index = input
+
+function input.new( data, parent )
+	data = data or { }
+	if data.style then
+		local t = data.style
+		for k, v in pairs( t ) do
+			if not data[k] then
+				data[k] = v
+			end
+		end
+		data.style = nil
+	end
+	local self = setmetatable(data,input)
+	self.parent = parent
+	self:getPercentages()
+	self:resize()
+	self:updateDrawPos(0)
+	local highIndex = 1
+	if not self.tabindex then
+		for i, v in pairs( self.parent.children ) do
+			if v.type and v.type == input and v.state == self.state then
+				if highIndex < v.tabindex then
+					highIndex = v.tabindex
+				end
+			end
+		end
+	end
+	self.tabindex = highIndex + 1
+
+	self.state = data.state or parent.state
+	table.insert( parent.children, self )
+	return self
+end
+
+function input:update( dt )
+	if (self.state == cobalt.state or self.state == "_ALL") then
+		if self.active then
+			self.cfl = self.cfl + cobalt.updatespeed
+			if self.cfl > 0.5 then
+				self.flash = not self.flash
+				self.cfl = 0
+			end
+		else
+			self.cfl = 0
+			self.flash = false
+		end
+	end
+end
+
+function input:updateDrawPos( pos )
+
+
+	if pos > 0 then
+		if self.pos <= #self.text then
+			self.pos = self.pos + pos
+		end
+	elseif pos < 0 then
+		if self.pos > 1 then
+			self.pos = self.pos + pos
+		end
+	end
+	self.drawpos = ( self.pos - self.scroll ) + self.x + self.marginleft
+	if self.drawpos < self.x + self.marginleft then
+		if self.scroll > 1 then
+			self.scroll = self.scroll - 1
+			self.drawpos = ( self.pos - self.scroll ) + self.x + self.marginleft
+		end
+	elseif self.drawpos > self.w + self.x + self.marginleft then
+		self.scroll = self.scroll + 1
+		self.drawpos = ( self.pos - self.scroll ) + self.x + self.marginleft
+	end
+	self.displaytext = self.text:sub( self.scroll, self.scroll + self.w )
+
+end
 
 function input:getPercentages()
 	if type(self.w) == "string" then
@@ -50,38 +131,6 @@ function input:getPercentages()
 		self.y = cobalt.getPercentage( self.y )
 		self.autoy = self.y
 	end
-end
-
-function input.new( data, parent )
-	data = data or { }
-	if data.style then
-		local t = data.style
-		for k, v in pairs( t ) do
-			if not data[k] then
-				data[k] = v
-			end
-		end
-		data.style = nil
-	end
-	local self = setmetatable(data,input)
-	self.parent = parent
-	self:getPercentages()
-	self:resize()
-	local highIndex = 1
-	if not self.tabindex then
-		for i, v in pairs( self.parent.children ) do
-			if v.type and v.type == input and v.state == self.state then
-				if highIndex < v.tabindex then
-					highIndex = v.tabindex
-				end
-			end
-		end
-	end
-	self.tabindex = highIndex + 1
-
-	self.state = data.state or parent.state
-	table.insert( parent.children, self )
-	return self
 end
 
 function input:resize()
@@ -129,91 +178,93 @@ end
 function input:getAbsY()
 	return self.y + math.floor(self.parent:getAbsY())-1 + self.margintop
 end
-
-function input:update( dt )
-	if self.active then
-		self.timer = self.timer + 0.1
-		if self.timer > 0.5 then
-			self.timer = 0
-			self.flash = not self.flash
-		end
-	else
-		self.flash = false
-	end
-end
-
 function input:draw()
 
+	if (self.state == cobalt.state or self.state == "_ALL") then
+		local t = self.displaytext
+		if self.mask then
+			local str = ""
+			for i =1, #t do
+				str = str .. self.mask
+			end
+			t = str
+		end
 
-	if self.state == cobalt.state or self.state == "_ALL" then
-		local bc = self.backPassiveColour
-		local fc = self.forePassiveColour
+		local bg = self.backPassiveColour
+		local fg = self.forePassiveColour
 		if self.active then
-			bc = self.backActiveColour
-			fc = self.foreActiveColour
+			bg = self.backActiveColour
+			fg = self.foreActiveColour
 		end
-		self.parent.surf:drawLine( math.floor(self.x + self.marginleft), math.floor(self.y + self.margintop), math.floor(self.x + self.marginleft) + self.w, math.floor(self.y + self.margintop), " ", bc, fc )
-		local t = self.text
-		if #self.text > self.w-1 then
-			t = self.text:sub( #self.text-self.w+1, #self.text )
+		if #t == 0 and not self.active then
+			t = self.placeholder:sub( 1, self.w )
+			fg = self.placeholderColour
 		end
-		if #self.text > 0 then
-			if self.mask ~= ""  then
-				local mskstr = ""
-				for i = 1, #self.text do
-					mskstr = mskstr .. self.mask
-				end
-				self.parent.surf:drawText( math.floor(self.x+ self.marginleft), math.floor(self.y+ self.margintop), mskstr, bc, fc )
-			else
-				self.parent.surf:drawText( math.floor(self.x+ self.marginleft), math.floor(self.y+ self.margintop), t, bc, fc )
+		self.parent.surf:drawLine( self.x + self.marginleft, self.y + self.margintop, self.x + self.marginleft + self.w, self.y + self.margintop, " ", bg )
+		self.parent.surf:drawText( self.x + self.marginleft, self.y + self.margintop, t, nil, fg )
+		if self.flash then
+			local c = t:sub( self.pos-self.scroll+1, self.pos-self.scroll+1)
+			if #c < 1 then
+				c = " "
 			end
-		else
-			if not self.active then
-				self.parent.surf:drawText( math.floor(self.x+ self.marginleft), math.floor(self.y+ self.margintop), self.placeholder, bc, self.placholderColour )
-			end
+			self.parent.surf:drawPixel( self.drawpos, self.y + self.margintop, c, fg, bg )
 		end
-		if self.flash and self.active then
-			self.parent.surf:drawText( math.floor(self.x+#t+self.marginleft), math.floor(self.y+self.margintop), "_", bc, fc )
-		end
+
 	end
+
 end
 
 function input:mousepressed( x, y, button )
-	if button == 1 and x >= self:getAbsX() and x <= self:getAbsX() + self.w and y == self:getAbsY() then
-		self.active = true
-	end
-end
-
-
-function input:mousereleased( x, y, button )
-	if button == 1 and x >= self:getAbsX() and x <= self:getAbsX() + self.w and y == self:getAbsY() then
-		--
-	else
-		self.active = false
+	if (self.state == cobalt.state or self.state == "_ALL") then
+		if x >= self:getAbsX() and x <= self:getAbsX() + self.w and y == self:getAbsY() then
+			self.active = true
+		else
+			self.active = false
+		end
 	end
 end
 
 function input:keypressed( keycode, key )
-	if self.active then
-		if self.state == cobalt.state or self.state == "_ALL" then
-			self.timer = 0
-			self.flash = true
-			if keycode == 14 then
-				self.text = self.text:sub(1, #self.text-1 )
-			elseif keycode == 211 then
+	if key == "enter" then
+		self.active = false
+		if self.oncomplete then self:oncomplete() end
+	elseif key == "backspace" then
+		if self.pos > 1 then
+			self.text = self.text:sub(1, self.pos-2) .. self.text:sub( self.pos )
+			self:updateDrawPos(-1)
+		end
+	elseif key == "delete" then
+		self.text = self.text:sub(1, self.pos-1) .. self.text:sub( self.pos +1 )
+	elseif key == "left" then
+		if self.pos > 1 then
+			self:updateDrawPos(-1)
+		end
+	elseif key == "right" then
+		if self.pos <= #self.text then
+			self:updateDrawPos(1)
+		end
+	end
+	self.cfl = 0
+	self.flash = true
+	self.displaytext = self.text:sub( self.scroll, self.scroll + self.w )
+end
 
-			elseif keycode == 28 then
-				self.active = false
-				if self.oncomplete then self:oncomplete() end
+function input:textinput( t )
+	if (self.state == cobalt.state or self.state == "_ALL") then
+		if self.active then
+			if #self.text + 1 <= self.maxlength or self.maxlength < 0 then
+				self.text = self.text:sub(1, self.pos-1) .. t .. self.text:sub( self.pos )
+				self:updateDrawPos(1)
 			end
 		end
 	end
 end
 
-function input:textinput( t )
-	if self.state == cobalt.state or self.state == "_ALL" then
-		if self.active and (#self.text < self.maxlength or self.maxlength < 0) then
-			self.text = self.text .. t
+function input:paste( text )
+	if (self.state == cobalt.state or self.state == "_ALL") then
+		if self.active then
+			self.text = self.text:sub(1, self.pos-1) .. text .. self.text:sub( self.pos )
+			self:updateDrawPos(#text)
 		end
 	end
 end

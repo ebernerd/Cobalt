@@ -359,6 +359,8 @@ function cobalt.initLoop( runOnce )
 				cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
 				if cobalt.draw then if cobalt.application.view then cobalt.application.view:clear(" ", cobalt.application.backColour, cobalt.application.foreColour ); end cobalt.draw(); if cobalt.application.view then cobalt.application.view:render() end end
 			end
+		elseif e == "paste" then
+			if cobalt.paste then cobalt.paste(a) end
 		end
 
 

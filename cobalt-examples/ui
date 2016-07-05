@@ -25,12 +25,12 @@ local Title = Titlebar:add( "text", { style=Styles.Title, text = "Cobalt-UI Exam
 local Desc = Main:add( "text", { w="85%", style=Styles.Paragraph, y = 7, x=2, text = "Welcome to the Cobalt-UI Examples! Here you can see how to use Cobalt-UI, as well as see live examples, so you get a feel as to how they work. Click next to get started!" } )
 local Navbar = Main:add( "panel", { w = cobalt.window.getWidth(), h = 1, backColour = colours.lightGrey, y = Main.h } )
 
-local Exit = Navbar:add( "button", { w = "33%", h = 1, x = 1, marginleft="33%", y = 0, text = "Exit", backColour = colours.red } )
+local Exit = Navbar:add( "button", { w = "33%", h = 1, x = 1, marginleft="33%", y = 1, text = "Exit", backColour = colours.red } )
 function Exit.onclick()
 	cobalt.exit()
 end
 
-local Prev = Navbar:add( "button", { w =  "33%", h = 1, x = 1, y = 0, text = "<- Previous", backColour = colours.lightGrey } )
+local Prev = Navbar:add( "button", { w =  "33%", h = 1, x = 1, y = 1, text = "<- Previous", backColour = colours.lightGrey } )
 function Prev.onclick()
 	if cobalt.state > 1 then
 		cobalt.state = cobalt.state - 1
@@ -39,7 +39,7 @@ function Prev.onclick()
 	Desc.unformatted = descs[cobalt.state]
 	Desc:resize()
 end
-local Next = Navbar:add( "button", { w = "34%", h = 1, x = 1, marginleft="66%", y = 0, text = "Next ->", backColour = colours.lightGrey } )
+local Next = Navbar:add( "button", { w = "34%", h = 1, x = 1, marginleft="66%", y = 1, text = "Next ->", backColour = colours.lightGrey } )
 function Next.onclick()
 	cobalt.state = cobalt.state + 1
 	Title.text = pages[cobalt.state] or "Unknown page"

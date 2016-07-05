@@ -84,6 +84,14 @@ function cui.mousedrag( x, y )
 	end
 end
 
+function cui.paste( text )
+	for i, v in ipairs( cui.roots ) do
+		if v.paste then
+			v:paste( text )
+		end
+	end
+end
+
 
 
 return cui

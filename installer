@@ -1,0 +1,128 @@
+local dlPath = "https://raw.githubusercontent.com/ebernerd/Cobalt/master/"
+local args = { ... }
+local beta = false
+if args[1] == "beta" then
+  dlPath = "https://raw.githubusercontent.com/ebernerd/Cobalt/beta/"
+  beta = true
+end
+
+local dx, dy = term.getSize()
+
+local function centerPrint( text, y )
+	term.clear()
+	term.setCursorPos( 1, 1 )
+	if beta then
+		write( "Cobalt Beta Version Installer" )
+	end
+	local t = {}
+	for i in string.gmatch( text, "%S+" ) do
+		t[#t+1] = i
+	end
+	local lines = {[1] = ""}
+	local line = 1
+	for i=1, #t do
+		if #tostring(lines[line].." "..t[i]) > dx then
+			lines[line] = lines[line] .. "\n"
+			line = line + 1
+			lines[line] = " " .. t[i]
+		else
+			lines[line] = lines[line] .. " " .. t[i]
+		end
+	end
+	y = y or math.ceil(dy/2-#lines/2)
+	for i = 1, #lines do
+		term.setCursorPos( dx/2-#lines[i]/2, y+(i-1))
+		print( lines[i])
+	end
+end
+
+local function getFile( file, path )
+	centerPrint( "Downloading " .. file .. " to \"" .. path .. "\"")
+	local dl = http.get( dlPath..file )
+	local h = dl.readAll()
+	dl.close()
+
+	local f = fs.open( path, "w" )
+	f.write( h )
+	f.close()
+end
+
+local function clear( colour )
+	term.setBackgroundColour( colour or term.getBackgroundColour() )
+	term.clear()
+	term.setCursorPos( 1, 1 )
+end
+
+local function yn()
+	local l = true
+	while l do
+		local event, key = os.pullEvent()
+		if event == "key" then
+			if key == 21 then
+				return true
+			elseif key == 49 then
+				return false
+			end
+		end
+	end
+end
+
+if beta then
+	term.setTextColour( colours.white )
+	clear( colours.grey )
+	getFile( "cobalt", "cobalt" )
+	getFile( "cobalt-lib/surface", "cobalt-lib/surface" )
+	sleep(0.5)
+	centerPrint( "Would you like to download \"Cobalt-UI\", a UI library for Cobalt? (y/n)")
+	if yn() then
+		print()
+		print( "Starting Cobalt-UI download...")
+		getFile( "cobalt-ui/init.lua", "cobalt-ui/init.lua" )
+		getFile( "cobalt-ui/elements/button.lua", "cobalt-ui/elements/button.lua" )
+		getFile( "cobalt-ui/elements/checkbox.lua", "cobalt-ui/elements/checkbox.lua" )
+		getFile( "cobalt-ui/elements/radio.lua", "cobalt-ui/elements/radio.lua" )
+		getFile( "cobalt-ui/elements/input.lua", "cobalt-ui/elements/input.lua" )
+		getFile( "cobalt-ui/elements/panel.lua", "cobalt-ui/elements/panel.lua" )
+		getFile( "cobalt-ui/elements/text.lua", "cobalt-ui/elements/text.lua" )
+		getFile( "cobalt-ui/elements/textarea.lua", "cobalt-ui/elements/textarea.lua" )
+		centerPrint( "Download of Cobalt-UI complete!")
+		sleep(0.5)
+	end
+	centerPrint( "Would you like to install \"Cobalt-Examples\", a set of examples for Cobalt and Cobalt-UI?" )
+	if yn() then
+		getFile( "cobalt-examples/ui", "cobalt-examples/ui" )
+		getFile( "cobalt-examples/ui-styles", "cobalt-examples/ui-styles" )
+		centerPrint( "Download of Cobalt-Examples complete!" )
+		sleep( 0.5 )
+	end
+	centerPrint( "There are no other Cobalt packages as of yet. Enjoy Cobalt!")
+	sleep(2)
+	centerPrint( "Press any key to exit the installer")
+	os.pullEvent('key_up')
+	clear( colours.black )
+else
+	term.setTextColour( colours.grey )
+	clear( colours.white )
+	getFile( "cobalt", "cobalt" )
+	sleep(0.5)
+	centerPrint( "Would you like to download \"Cobalt-UI\", a UI library for Cobalt? (y/n)")
+	if yn() then
+		print()
+		print( "Starting Cobalt-UI download...")
+		getFile( "cobalt-ui/init.lua", "cobalt-ui/init.lua" )
+		getFile( "cobalt-ui/surface", "cobalt-ui/surface" )
+		getFile( "cobalt-ui/elements/button.lua", "cobalt-ui/elements/button.lua" )
+		getFile( "cobalt-ui/elements/checkbox.lua", "cobalt-ui/elements/checkbox.lua" )
+		getFile( "cobalt-ui/elements/radio.lua", "cobalt-ui/elements/radio.lua" )
+		getFile( "cobalt-ui/elements/input.lua", "cobalt-ui/elements/input.lua" )
+		getFile( "cobalt-ui/elements/panel.lua", "cobalt-ui/elements/panel.lua" )
+		getFile( "cobalt-ui/elements/text.lua", "cobalt-ui/elements/text.lua" )
+		centerPrint( "Download of Cobalt-UI complete!")
+		sleep(0.5)
+	end
+	centerPrint( "There are no other Cobalt packages as of yet. Enjoy Cobalt!")
+	sleep(2)
+	centerPrint( "Press any key to exit the installer")
+	os.pullEvent('key_up')
+	clear( colours.black )
+end
