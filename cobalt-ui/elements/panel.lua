@@ -122,7 +122,7 @@ function panel:resize( w, h )
 		self.w = math.floor( w * self.autow )
 	end
 	if type( self.autoh ) == "number" then
-		self.h = math.floor( w * self.autow )
+		self.h = math.floor( h * self.autow )
 	end
 	if type( self.automl ) == "number" then
 		self.marginleft = math.floor( w * self.automl )

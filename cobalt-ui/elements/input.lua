@@ -30,6 +30,10 @@ local input = {
 input.__index = input
 
 function input:getPercentages()
+	if type(self.w) == "string" then
+		self.w = cobalt.getPercentage( self.w )
+		self.autow = self.w
+	end
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
 		self.automl = self.marginleft
