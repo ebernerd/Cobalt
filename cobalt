@@ -1,4 +1,4 @@
-local cobalt = {
+cobalt = {
 	graphics = { },
 	filesystem = { },
 	event = { },
@@ -28,8 +28,8 @@ cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
 
 function cobalt.debug( item )
 	local f = fs.open( ".cobaltdebug", "w" )
-	f:write(item)
-	f:close()
+	f.write(item)
+	f.close()
 	cobalt.exit()
 end
 
@@ -249,8 +249,14 @@ function cobalt._keyreleased( key, keycode )
 end
 
 function cobalt.keyboard.isDown( key )
-	if cobalt.keyboard.keysdown[key] then
-		return true
+	if not key then
+		if #cobalt.keyboard.keysdown > 0 then
+			return true
+		end
+	else
+		if cobalt.keyboard.keysdown[key] then
+			return true
+		end
 	end
 	return false
 end
@@ -280,11 +286,7 @@ function cobalt.getPercentage( str )
 			if perc > 100 or perc < 0 then
 				error( "Invalid percentage" )
 			else
-				if perc == 100 then
-					return 1
-				else
-					return perc
-				end
+				return perc/100
 			end
 		else
 			error("Expected number or percentage")
@@ -293,10 +295,7 @@ function cobalt.getPercentage( str )
 end
 
 function cobalt.setPercentage( perc )
-	if tonumber(perc) >= 100 then
-		return 1
-	end
-	return tonumber( "0." .. perc )
+	return perc --Dunno if this will work.
 end
 
 

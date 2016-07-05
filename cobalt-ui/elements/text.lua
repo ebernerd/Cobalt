@@ -7,16 +7,13 @@ local text = {
 	type = "text",
 	autofit = true,
 	marginleft = 0,
-	marginright = 0,
 	margintop = 0,
-	marginbottom = 0,
 	automl = "",
-	automr = "",
 	automt = "",
-	automb = "",
 	wrap = "left",
 	autow = "parent",
 	autoh = true,
+	lines = 0,
 }
 text.__index = text
 
@@ -41,46 +38,38 @@ local function formatText( text, w )
 			lines[line] = lines[line] .. " " .. t[i]
 		end
 	end
-	return lines
+	return lines, #lines
 end
 
 function text:getPercentages()
 	if type(self.w) == "string" then
 		self.w = cobalt.getPercentage( self.w )
-		self.autow = "perc:" .. self.w
+		self.autow = self.w
 	else
 		self.autow = "none"
 	end
 	if type(self.h) == "string" then
 		self.h = cobalt.getPercentage( self.h )
-		self.autoh = "perc:" .. self.h
+		self.autoh = self.h
 	else
 		self.autoh = "none"
 	end
 
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
-		self.automl = "perc:" .. self.marginleft
-	end
-	if type(self.marginright) == "string" then
-		self.marginright = cobalt.getPercentage( self.marginright )
-		self.automr = "perc:" .. self.marginright
+		self.automl = self.marginleft
 	end
 	if type(self.margintop) == "string" then
 		self.margintop = cobalt.getPercentage( self.margintop )
-		self.automt = "perc:" .. self.margintop
-	end
-	if type(self.marginbottom) == "string" then
-		self.marginbottom = cobalt.getPercentage( self.marginbottom )
-		self.automl = "perc:" .. self.marginbottom
+		self.automt = self.margintop
 	end
 	if type(self.x) == "string" then
 		self.x = cobalt.getPercentage( self.x )
-		self.autox = "perc:" .. self.x
+		self.autox = self.x
 	end
 	if type(self.y) == "string" then
 		self.y = cobalt.getPercentage( self.y )
-		self.autoy = "perc:" .. self.y
+		self.autoy = self.y
 	end
 end
 
@@ -107,29 +96,13 @@ function text.new( data, parent )
 	return self
 end
 
-function text:setMargins( t, r, b, l )
+function text:setMargins( t, l )
 	if t then
 		self.margintop = t or self.margintop
 		if type(t) == "string" then
 			self:getPercentages()
 		else
 			self.automt = "none"
-		end
-	end
-	if r then
-		self.marginright = r or self.marginright
-		if type(r) == "string" then
-			self:getPercentages()
-		else
-			self.automr = "none"
-		end
-	end
-	if b then
-		self.margintop = b or self.margintop
-		if type(b) == "string" then
-			self:getPercentages()
-		else
-			self.automb = "none"
 		end
 	end
 	if l then
@@ -146,35 +119,22 @@ end
 function text:resize()
 	if self.autow=="parent" then
 		self.w = self.parent.w
-	elseif self.autow:sub( 1, 4 ) == "perc" then
-		local perc = self.autow:match("perc:(%d+)")
-		self.w = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	elseif type( self.autow ) == "number" then
+		self.w = math.ceil( self.parent.w * self.autow )
 	end
-	if self.automl:sub( 1, 4 ) == "perc" then
-		local perc = self.automl:match("perc:(%d+)")
-		self.marginleft = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
+	if type( self.automl ) == "number" then
+		self.marginleft = math.floor( self.parent.w * self.automl )
 	end
-	if self.automr:sub( 1, 4 ) == "perc" then
-		local perc = self.automr:match("perc:(%d+)")
-		self.marginright = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	if type( self.automt ) == "number" then
+		self.margintop = math.floor( self.parent.h * self.automt )
 	end
-	if self.automt:sub( 1, 4 ) == "perc" then
-		local perc = self.automt:match("perc:(%d+)")
-		self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+	if self.autox and type( self.autox ) == "number" then
+		self.x = math.ceil( self.parent.w * self.autox )
 	end
-	if self.automb:sub( 1, 4 ) == "perc" then
-		local perc = self.automb:match("perc:(%d+)")
-		self.marginbottom = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
+	if self.autoy and type( self.autoy ) == "number" then
+		self.y = math.ceil( self.parent.h * self.autoy )
 	end
-	if self.autox and self.autox:sub( 1, 4 ) == "perc" then
-		local perc = self.autox:match("perc:(%d+)")
-		self.x = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
-	end
-	if self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
-		local perc = self.autoy:match("perc:(%d+)")
-		self.y = math.ceil( self.parent.h * cobalt.setPercentage( perc ) )
-	end
-	self.text = formatText( self.unformatted, self.w or self.parent.w )
+	self.text, self.lines = formatText( self.unformatted, self.w or self.parent.w )
 end
 
 function text:getAbsX()

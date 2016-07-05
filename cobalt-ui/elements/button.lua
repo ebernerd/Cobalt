@@ -10,13 +10,9 @@ local button = {
 	visible = true,
 	type = "button",
 	marginleft = 0,
-	marginright = 0,
 	margintop = 0,
-	marginbottom = 0,
 	automl = "",
-	automr = "",
 	automt = "",
-	automb = "",
 	autow = "perc:50",
 	wrap = "left",
 	autoh = true,
@@ -26,40 +22,32 @@ button.__index = button
 function button:getPercentages()
 	if type(self.w) == "string" then
 		self.w = cobalt.getPercentage( self.w )
-		self.autow = "perc:" .. self.w
+		self.autow = self.w
 	else
 		self.autow = "none"
 	end
 	if type(self.h) == "string" then
 		self.h = cobalt.getPercentage( self.h )
-		self.autoh = "perc:" .. self.h
+		self.autoh = self.h
 	else
 		self.autoh = "none"
 	end
 
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
-		self.automl = "perc:" .. self.marginleft
-	end
-	if type(self.marginright) == "string" then
-		self.marginright = cobalt.getPercentage( self.marginright )
-		self.automr = "perc:" .. self.marginright
+		self.automl = self.marginleft
 	end
 	if type(self.margintop) == "string" then
 		self.margintop = cobalt.getPercentage( self.margintop )
-		self.automt = "perc:" .. self.margintop
-	end
-	if type(self.marginbottom) == "string" then
-		self.marginbottom = cobalt.getPercentage( self.marginbottom )
-		self.automl = "perc:" .. self.marginbottom
+		self.automt = self.margintop
 	end
 	if type(self.x) == "string" then
 		self.x = cobalt.getPercentage( self.x )
-		self.autox = "perc:" .. self.x
+		self.autox = self.x
 	end
 	if type(self.y) == "string" then
 		self.y = cobalt.getPercentage( self.y )
-		self.autoy = "perc:" .. self.y
+		self.autoy = self.y
 	end
 end
 
@@ -83,29 +71,13 @@ function button.new( data, parent )
 	return self
 end
 
-function button:setMargins( t, r, b, l )
+function button:setMargins( t, l )
 	if t then
 		self.margintop = t or self.margintop
 		if type(t) == "string" then
 			self:getPercentages()
 		else
 			self.automt = "none"
-		end
-	end
-	if r then
-		self.marginright = r or self.marginright
-		if type(r) == "string" then
-			self:getPercentages()
-		else
-			self.automr = "none"
-		end
-	end
-	if b then
-		self.margintop = b or self.margintop
-		if type(b) == "string" then
-			self:getPercentages()
-		else
-			self.automb = "none"
 		end
 	end
 	if l then
@@ -136,34 +108,23 @@ function button:resize( w, h )
 			self.autoh = "none"
 		end
 	end
-	if self.autow:sub( 1, 4 ) == "perc" then
-		local perc = self.autow:match("perc:(%d+)")
-		cobalt.setPercentage( perc )
-		self.w = math.ceil( self.parent.w * cobalt.setPercentage( perc ) )
+	if type( self.autow ) == "number" then
+		self.w = math.floor( self.parent.w * self.autow )
 	end
-	if self.automl:sub( 1, 4 ) == "perc" then
-		local perc = self.automl:match("perc:(%d+)")
-		self.marginleft = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
+	if type( self.autoh ) == "number" then
+		self.h = math.floor( self.parent.w * self.autow )
 	end
-	if self.automr:sub( 1, 4 ) == "perc" then
-		local perc = self.automr:match("perc:(%d+)")
-		self.marginright = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
+	if type( self.automl ) == "number" then
+		self.marginleft = math.floor( self.parent.w * self.automl )
 	end
-	if self.automt:sub( 1, 4 ) == "perc" then
-		local perc = self.automt:match("perc:(%d+)")
-		self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+	if type( self.automt ) == "number" then
+		self.margintop = math.floor( self.parent.h * self.automt )
 	end
-	if self.automb:sub( 1, 4 ) == "perc" then
-		local perc = self.automb:match("perc:(%d+)")
-		self.marginbottom = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+	if self.autox and type( self.autox ) == "number" then
+		self.x = math.ceil( self.parent.w * self.autox )
 	end
-	if self.autox and self.autox:sub( 1, 4 ) == "perc" then
-		local perc = self.autox:match("perc:(%d+)")
-		self.x = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
-	end
-	if self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
-		local perc = self.autoy:match("perc:(%d+)")
-		self.y = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+	if self.autoy and type( self.autoy ) == "number" then
+		self.y = math.ceil( self.parent.h * self.autoy )
 	end
 end
 

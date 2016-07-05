@@ -1,0 +1,105 @@
+local cobalt = dofile( "cobalt" )
+local ui = dofile( "cobalt-ui/init.lua" )
+
+Styles = ui.loadStyles( "cobalt-examples/ui-styles" )
+
+cobalt.state = 1
+
+local pages = {
+	"Cobalt-UI Examples",
+	"Getting Started",
+	"Panels",
+	"Panels (cont.)"
+}
+
+local descs = {
+	"Welcome to the Cobalt-UI Examples! Here you can see how to use Cobalt-UI, as well as see live examples, so you get a feel as to how they work. Click next to get started! (alternatively you can use the left and right arrow key to navigate pages)",
+	"You need to include Cobalt and Cobalt-UI to run this. You do this like so: ",
+	"Panels are what you use to place other objects in. They act as containers, and have many neat features. The first object you create in a Cobalt-UI project must be a panel.",
+	"The first panel you create must be made using \"cobalt.ui.new\". You do that like so:"
+}
+
+local Main = ui.new( { style=Styles.Main } )
+local Titlebar = Main:add("panel", { w = cobalt.window.getWidth(), h = 5, backColour = colours.cyan } )
+local Title = Titlebar:add( "text", { style=Styles.Title, text = "Cobalt-UI Examples",} )
+local Desc = Main:add( "text", { w="85%", style=Styles.Paragraph, y = 7, x=2, text = "Welcome to the Cobalt-UI Examples! Here you can see how to use Cobalt-UI, as well as see live examples, so you get a feel as to how they work. Click next to get started!" } )
+local Navbar = Main:add( "panel", { w = cobalt.window.getWidth(), h = 1, backColour = colours.lightGrey, y = Main.h } )
+
+local Exit = Navbar:add( "button", { w = "33%", h = 1, x = 1, marginleft="33%", y = 0, text = "Exit", backColour = colours.red } )
+function Exit.onclick()
+	cobalt.exit()
+end
+
+local Prev = Navbar:add( "button", { w =  "33%", h = 1, x = 1, y = 0, text = "<- Previous", backColour = colours.lightGrey } )
+function Prev.onclick()
+	if cobalt.state > 1 then
+		cobalt.state = cobalt.state - 1
+	end
+	Title.text = pages[cobalt.state] or "Unknown page"
+	Desc.unformatted = descs[cobalt.state]
+	Desc:resize()
+end
+local Next = Navbar:add( "button", { w = "34%", h = 1, x = 1, marginleft="66%", y = 0, text = "Next ->", backColour = colours.lightGrey } )
+function Next.onclick()
+	cobalt.state = cobalt.state + 1
+	Title.text = pages[cobalt.state] or "Unknown page"
+	Desc.unformatted = descs[cobalt.state]
+	Desc:resize()
+end
+
+local function newCodeBlock( state, y, codes )
+	local b = Main:add( "panel", { style=Styles.Code, state = state, h = #codes+2, y=y } )
+	for i = 1, #codes do
+		b:add( "text", { text = codes[i], y = i+1, x=2, foreColour = colours.white, backColour = colours.black } )
+	end
+	return b
+end
+
+newCodeBlock( 2, 10, {
+	"local cobalt = dofile('cobalt')",
+	"cobalt.ui = dofile('cobalt-ui/init.lua')"
+})
+
+newCodeBlock( 4, 10, {
+	"Panel = cobalt.ui.new( {} )"
+})
+
+
+
+
+
+function cobalt.draw()
+	ui.draw()
+end
+
+function cobalt.update( dt )
+	ui.update( dt )
+end
+
+function cobalt.mousepressed( x, y, button )
+	ui.mousepressed( x, y, button )
+end
+
+function cobalt.mousereleased( x, y, button )
+	ui.mousereleased( x, y, button )
+end
+
+function cobalt.keyreleased( keycode, key )
+	if key == "right" then
+		cobalt.state = cobalt.state + 1
+		Title.text = pages[cobalt.state] or "Unknown page"
+		Desc.unformatted = descs[cobalt.state]
+		Desc:resize()
+	elseif key == "left" then
+		if cobalt.state > 1 then
+			cobalt.state = cobalt.state - 1
+		end
+		Title.text = pages[cobalt.state] or "Unknown page"
+		Desc.unformatted = descs[cobalt.state]
+		Desc:resize()
+	end
+end
+
+
+
+cobalt.init()
