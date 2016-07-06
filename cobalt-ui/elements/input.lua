@@ -225,28 +225,30 @@ function input:mousepressed( x, y, button )
 end
 
 function input:keypressed( keycode, key )
-	if key == "enter" then
-		self.active = false
-		if self.oncomplete then self:oncomplete() end
-	elseif key == "backspace" then
-		if self.pos > 1 then
-			self.text = self.text:sub(1, self.pos-2) .. self.text:sub( self.pos )
-			self:updateDrawPos(-1)
+	if (self.state == cobalt.state or self.state == "_ALL") and self.active then
+		if key == "enter" then
+			self.active = false
+			if self.oncomplete then self:oncomplete() end
+		elseif key == "backspace" then
+			if self.pos > 1 then
+				self.text = self.text:sub(1, self.pos-2) .. self.text:sub( self.pos )
+				self:updateDrawPos(-1)
+			end
+		elseif key == "delete" then
+			self.text = self.text:sub(1, self.pos-1) .. self.text:sub( self.pos +1 )
+		elseif key == "left" then
+			if self.pos > 1 then
+				self:updateDrawPos(-1)
+			end
+		elseif key == "right" then
+			if self.pos <= #self.text then
+				self:updateDrawPos(1)
+			end
 		end
-	elseif key == "delete" then
-		self.text = self.text:sub(1, self.pos-1) .. self.text:sub( self.pos +1 )
-	elseif key == "left" then
-		if self.pos > 1 then
-			self:updateDrawPos(-1)
-		end
-	elseif key == "right" then
-		if self.pos <= #self.text then
-			self:updateDrawPos(1)
-		end
+		self.cfl = 0
+		self.flash = true
+		self.displaytext = self.text:sub( self.scroll, self.scroll + self.w )
 	end
-	self.cfl = 0
-	self.flash = true
-	self.displaytext = self.text:sub( self.scroll, self.scroll + self.w )
 end
 
 function input:textinput( t )
