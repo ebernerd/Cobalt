@@ -153,7 +153,7 @@ function text:draw()
 	if self.state == cobalt.state or self.state == "_ALL" then
 		if self.wrap == "right" then
 			for i = 1, #self.text do
-				self.parent.surf:drawText((#self.text[i]-self.x+1) - math.floor( #self.text[i] )+math.ceil( self.marginright ), self.y + (i-1)+self.margintop, self.text[i], self.backColour, self.foreColour )
+				self.parent.surf:drawText(self.parent.w - math.floor( #self.text[i] )+1, self.y + (i-1)+self.margintop, self.text[i], self.backColour, self.foreColour )
 			end
 		elseif self.wrap == "center" then
 			for i = 1, #self.text do

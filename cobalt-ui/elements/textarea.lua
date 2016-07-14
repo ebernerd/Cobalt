@@ -70,6 +70,14 @@ function textarea.new( data, parent )
 	return self
 end
 
+function textarea:getLine()
+	return self.line
+end
+
+function textarea:getPos()
+	return self.pos
+end
+
 function textarea:update( dt )
 	if (self.state == cobalt.state or self.state == "_ALL") then
 		if self.active then
