@@ -178,16 +178,18 @@ end
 function input:getAbsY()
 	return self.y + math.floor(self.parent:getAbsY())-1 + self.margintop
 end
+
+function input:disable()
+	self.active = false
+end
+
 function input:draw()
 
 	if (self.state == cobalt.state or self.state == "_ALL") then
 		local t = self.displaytext
 		if self.mask then
-			local str = ""
-			for i =1, #t do
-				str = str .. self.mask
-			end
-			t = str
+			t = ""
+			t = string.rep(self.mask, cobalt.math.clamp(#self.text-(self.scroll-1), 0, self.w))
 		end
 
 		local bg = self.backPassiveColour
@@ -222,6 +224,13 @@ function input:mousepressed( x, y, button )
 			self.active = false
 		end
 	end
+end
+
+function input:setText( text )
+	self.text = text or self.text
+	--cobalt.debug( text .. " " .. self.text )
+	self:resize()
+	self:updateDrawPos(#self.text)
 end
 
 function input:keypressed( keycode, key )

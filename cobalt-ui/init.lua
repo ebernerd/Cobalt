@@ -7,6 +7,14 @@ for i, v in pairs( fs.list( "cobalt-ui/elements" ) ) do
 	cui.elements[v:sub(1, #v-4)] = dofile("cobalt-ui/elements/" .. v)
 end
 
+local colcharlookup = { }
+for i = 1, 16 do
+	colcharlookup[ string.byte( "0123456789abcdef",i,i)] = 2^(n-1)
+end
+function cui.getColourFromChar( char )
+	return colcharlookup[char]
+end
+
 function cui.loadStyles( path )
 	if fs.exists( path ) then
 		local t = dofile(path)

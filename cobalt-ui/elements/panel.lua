@@ -315,6 +315,10 @@ function panel:mousepressed( x, y, button )
 			end
 
 			return true
+		else
+			for i, v in pairs( self.children ) do
+				if v.disable then v:disable() end
+			end
 		end
 	end
 end

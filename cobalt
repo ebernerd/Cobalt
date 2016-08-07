@@ -54,7 +54,7 @@ if args[1] == "version" then
 			print( "\nUse the command \"cobalt update\" to receive the newest update!" )
 		end
 	else
-		print( "Cobalt version checking is not available at this time" )
+		print( "Cobalt version checking is not available at this time. Is HTTP and HTTPS enabled?" )
 	end
 elseif args[1] == "update" then
 	shell.run( "pastebin run h5h4fm3t" )
@@ -190,9 +190,6 @@ function cobalt.graphics.line( x1, y1, x2, y2, backColour, colour )
 	end
 end
 
-cobalt.graphics.setBackgroundColour = term.setBackgroundColour
-cobalt.graphics.setColour = term.setTextColour
-
 function cobalt.graphics.lighten( colour )
 	return graphics_lighten[colour]
 end
@@ -235,15 +232,24 @@ end
 
 --[=[KEYBOARD FUNCTIONS]=]--
 function cobalt._keypressed( key, keycode )
-	cobalt.keyboard.keysdown[key] = true
-	cobalt.keyboard.keysdown[keycode] = true
+	if key then
+		cobalt.keyboard.keysdown[key] = true
+	end
+	if keycode then
+		cobalt.keyboard.keysdown[keycode] = true
+	end
+
 
 	if cobalt.keypressed then cobalt.keypressed( key, keycode ) end
 end
 
 function cobalt._keyreleased( key, keycode )
-	cobalt.keyboard.keysdown[key] = nil
-	cobalt.keyboard.keysdown[keycode] = nil
+	if key then
+		cobalt.keyboard.keysdown[key] = nil
+	end
+	if keycode then
+		cobalt.keyboard.keysdown[keycode] = nil
+	end
 
 	if cobalt.keyreleased then cobalt.keyreleased( key, keycode ) end
 end
@@ -265,6 +271,11 @@ end
 function cobalt.math.round(num, idp)
 	local mult = 10^(idp or 0)
 	return math.floor(num * mult + 0.5) / mult
+end
+
+function cobalt.math.clamp( val, lower, upper )
+	if lower > upper then lower, upper = upper, lower end
+	return math.max( lower, math.min( upper, val ) )
 end
 
 

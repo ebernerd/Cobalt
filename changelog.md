@@ -36,3 +36,14 @@ This is a list of all the changes made in Cobalt `1.1_0`.
 + Fixed percentage issues (using percentages with single digits, like `5%` or `05%`, or using `100%` no longer return incorrect values)
 + Percentages are now more precise, as they are in fraction form rather than rounded decimal form
 + Percentages for the `x` and `y` value are now calculated using the same method as the `marginleft` and `margintop` attributes
+
+## Features for v1.2
+### Cobalt
++ Unknown
+
+### Cobalt-UI
++ Canvases (paint areas)
++ Colour Selectors
++ Tab Controls
++ Sliders
++ Images
