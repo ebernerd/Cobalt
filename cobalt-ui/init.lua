@@ -1,11 +1,18 @@
 cui = { }
-os.loadAPI( "cobalt-ui/surface" )
 
 cui.roots = { }
 cui.styles = { }
 cui.elements = { }
 for i, v in pairs( fs.list( "cobalt-ui/elements" ) ) do
 	cui.elements[v:sub(1, #v-4)] = dofile("cobalt-ui/elements/" .. v)
+end
+
+local colcharlookup = { }
+for i = 1, 16 do
+	colcharlookup[ string.byte( "0123456789abcdef",i,i)] = 2^(n-1)
+end
+function cui.getColourFromChar( char )
+	return colcharlookup[char]
 end
 
 function cui.loadStyles( path )
@@ -81,6 +88,14 @@ function cui.mousedrag( x, y )
 	for i, v in ipairs( cui.roots ) do
 		if v.mousedrag then
 			v:mousedrag( x, y )
+		end
+	end
+end
+
+function cui.paste( text )
+	for i, v in ipairs( cui.roots ) do
+		if v.paste then
+			v:paste( text )
 		end
 	end
 end

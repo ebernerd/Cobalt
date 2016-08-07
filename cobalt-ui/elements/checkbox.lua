@@ -24,19 +24,19 @@ checkbox.__index = checkbox
 function checkbox:getPercentages()
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
-		self.automl = "perc:" .. self.marginleft
+		self.automl = self.marginleft
 	end
 	if type(self.margintop) == "string" then
 		self.margintop = cobalt.getPercentage( self.margintop )
-		self.automt = "perc:" .. self.margintop
+		self.automt = self.margintop
 	end
 	if type(self.x) == "string" then
 		self.x = cobalt.getPercentage( self.x )
-		self.autox = "perc:" .. self.x
+		self.autox = self.x
 	end
 	if type(self.y) == "string" then
 		self.y = cobalt.getPercentage( self.y )
-		self.autoy = "perc:" .. self.y
+		self.autoy = self.y
 	end
 end
 
@@ -62,29 +62,13 @@ function checkbox.new( data, parent )
 	return self
 end
 
-function checkbox:setMargins( t, r, b, l )
+function checkbox:setMargins( t, l )
 	if t then
 		self.margintop = t or self.margintop
 		if type(t) == "string" then
 			self:getPercentages()
 		else
 			self.automt = "none"
-		end
-	end
-	if r then
-		self.marginright = r or self.marginright
-		if type(r) == "string" then
-			self:getPercentages()
-		else
-			self.automr = "none"
-		end
-	end
-	if b then
-		self.margintop = b or self.margintop
-		if type(b) == "string" then
-			self:getPercentages()
-		else
-			self.automb = "none"
 		end
 	end
 	if l then
@@ -99,21 +83,17 @@ function checkbox:setMargins( t, r, b, l )
 end
 
 function checkbox:resize()
-	if self.automl:sub( 1, 4 ) == "perc" then
-		local perc = self.automl:match("perc:(%d+)")
-		self.marginleft = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
+	if type( self.automl ) == "number" then
+		self.marginleft = math.floor( self.parent.w * self.automl )
 	end
-	if self.automt:sub( 1, 4 ) == "perc" then
-		local perc = self.automt:match("perc:(%d+)")
-		self.margintop = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+	if type( self.automt ) == "number" then
+		self.margintop = math.floor( self.parent.h * self.automt )
 	end
-	if self.autox and self.autox:sub( 1, 4 ) == "perc" then
-		local perc = self.autox:match("perc:(%d+)")
-		self.x = math.floor( self.parent.w * cobalt.setPercentage( perc ) )
+	if self.autox and type( self.autox ) == "number" then
+		self.x = math.ceil( self.parent.w * self.autox )
 	end
-	if self.autoy and self.autoy:sub( 1, 4 ) == "perc" then
-		local perc = self.autoy:match("perc:(%d+)")
-		self.y = math.floor( self.parent.h * cobalt.setPercentage( perc ) )
+	if self.autoy and type( self.autoy ) == "number" then
+		self.y = math.ceil( self.parent.h * self.autoy )
 	end
 end
 
