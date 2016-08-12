@@ -9,7 +9,7 @@ end
 
 local colcharlookup = { }
 for i = 1, 16 do
-	colcharlookup[ string.byte( "0123456789abcdef",i,i)] = 2^(n-1)
+	colcharlookup[ string.byte( "0123456789abcdef",i,i)] = 2^(i-1)
 end
 function cui.getColourFromChar( char )
 	return colcharlookup[char]
