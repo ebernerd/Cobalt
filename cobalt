@@ -18,7 +18,7 @@ cobalt = {
 	mouse = { },
 	table = { },
 	state = "Main",
-	version = "1.1_2",
+	version = "1.1_3",
 	updatespeed = 0.1
 }
 
@@ -51,7 +51,7 @@ end
 local args = { ... }
 if args[1] == "version" then
 	print( "Cobalt " .. cobalt.version )
-	v = getFile( "version" )
+	v = getFile( "version" ):sub(1,-2)
 	if v then
 		if cobalt.version ~= v then
 			print( "Your Cobalt version is out of date!\nYour Version: " .. cobalt.version .. " | Current: " .. v )
