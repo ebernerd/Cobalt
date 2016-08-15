@@ -4,7 +4,7 @@ local textarea = {
 	w = 10,
 	h = 5,
 	backPassiveColour = colours.lightGrey,
-	backActiveColour = colours.lightGrey,
+	backActiveColour = colours.white,
 	forePassiveColour = colours.grey,
 	foreActiveColour = colours.black,
 	placeholderColour = colours.grey,
@@ -23,6 +23,7 @@ local textarea = {
 	autox = "",
 	autoy = "",
 	autow = "",
+	autoh = "",
 	automt = "",
 	automl = "",
 	marginleft = 0,
@@ -76,6 +77,44 @@ end
 
 function textarea:getPos()
 	return self.pos
+end
+
+function textarea:setText( line, text )
+	local line = line or 1
+	if text then
+		if line > #self.lines then
+			for i=#self.lines, line do
+				self.lines[i] = ""
+			end
+		end
+		self.lines[line] = text
+	end
+end
+
+function textarea:appendText( line, text )
+	local line = line or 1
+	if text then
+		if line > #self.lines then
+			for i=#self.lines, line do
+				self.lines[i] = ""
+			end
+		end
+		self.lines[line] = self.lines[line] .. text
+	end
+end
+
+function textarea:getText( format )
+	local format = format or "string"
+	if format == "string" or format == "str" or format == "s" then
+		local str = ""
+		for i = 1, #self.lines do
+			str = str .. self.lines[i] .. "\n"
+		end
+		return str
+	elseif format == "table" or format == "tbl" or format == "t" then
+		return self.lines
+	end
+
 end
 
 function textarea:update( dt )
@@ -153,6 +192,10 @@ function textarea:getPercentages()
 		self.w = cobalt.getPercentage( self.w )
 		self.autow = self.w
 	end
+	if type(self.h) == "string" then
+		self.h = cobalt.getPercentage( self.h )
+		self.autoh = self.h
+	end
 	if type(self.marginleft) == "string" then
 		self.marginleft = cobalt.getPercentage( self.marginleft )
 		self.automl = self.marginleft
@@ -171,9 +214,15 @@ function textarea:getPercentages()
 	end
 end
 
-function textarea:resize()
+function textarea:resize( w, h )
+	self.w = w or self.w
+	self.h = h or self.h
+	self:getPercentages()
 	if type( self.autow ) == "number" then
 		self.w = math.floor( self.parent.w * self.autow )
+	end
+	if type( self.autoh ) == "number" then
+		self.h = math.floor( self.parent.h * self.autow )
 	end
 	if type( self.automl ) == "number" then
 		self.marginleft = math.floor( self.parent.w * self.automl )

@@ -18,7 +18,7 @@ cobalt = {
 	mouse = { },
 	table = { },
 	state = "Main",
-	version = "1.1_0",
+	version = "1.1_2",
 	updatespeed = 0.1
 }
 
@@ -42,6 +42,10 @@ local function getFile( file, path )
 		return h
 	end
 	return false
+end
+
+if not fs.isDir( ".err-logs" ) then
+	fs.makeDir( ".err-logs" )
 end
 
 local args = { ... }
@@ -135,6 +139,8 @@ local graphics_darken = {
 
 --[=[ GRAPHICS FUNCTIONS ]=]--
 function cobalt.graphics.print( text, x, y, colour, backColour )
+	local x = x or 1
+	local y = y or 1
 	text = tostring(text) or "Some Text"
 	if cobalt.application.view then
 		cobalt.application.view:drawText( cobalt.math.round(x), cobalt.math.round(y), text, colour, backColour )
@@ -149,10 +155,14 @@ function cobalt.graphics.rect( mode, x, y, w, h, colour )
 		end
 	end
 end
-function cobalt.graphics.center( text, y, offset, colour, backColour )
-	text = tostring(text) or "Some Text"
-	y = y or 1
-	offset = offset or 0
+function cobalt.graphics.center( text, y, offset, lim, colour, backColour )
+	local text = tostring(text) or "Some Text"
+	local y = y or 1
+	local offset = offset or 0
+	local lim = lim or cobalt.window.getWidth()
+	if lim > cobalt.window.getWidth() then
+		lim = cobalt.window.getWidth()
+	end
 	if cobalt.application.view then
 		local t = {}
 		for i in string.gmatch( text, "%S+" ) do
@@ -161,7 +171,7 @@ function cobalt.graphics.center( text, y, offset, colour, backColour )
 		local lines = {[1] = ""}
 		local line = 1
 		for i=1, #t do
-			if #tostring(lines[line].." "..t[i]) > cobalt.window.getWidth() then
+			if #tostring(lines[line].." "..t[i]) > lim then
 				lines[line] = lines[line] .. "\n"
 				line = line + 1
 				lines[line] = " " .. t[i]
@@ -336,6 +346,48 @@ function cobalt.exit( ... )
 	return true
 end
 
+function cobalt.halt()
+	cobalt._mainloop = false
+end
+
+local function cerr( reason )
+
+	cobalt.application.view = nil
+	cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", colours.blue, colours.white )
+	cobalt.graphics.center( "Cobalt Error Report", 2 )
+	cobalt.graphics.center( "Your program has encountered an error, which has been traced back to:", 4, 0, 40 )
+	cobalt.graphics.center( reason or "No further information", 8, 0, 40, nil, colours.yellow )
+	local saveLoc = ".err-logs/" .. os.day() .. "-" .. os.time()
+	local f = fs.open( saveLoc, "w" )
+	f.write( reason or "No further information" )
+	f.close()
+	cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+	cobalt.application.view:render()
+	sleep( 0.5 )
+	cobalt.graphics.center( "Press any key to exit.", cobalt.window.getHeight()-1 )
+	cobalt.application.view:render()
+	os.pullEvent( "key_up" )
+	cobalt.exit()
+end
+
+local function update()
+	if cobalt.update then 
+		local ok, err = pcall(cobalt.update, cobalt.updatespeed)
+		if not ok then
+			cerr( err )
+		end
+	end
+	cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
+	if cobalt.draw then 
+		if cobalt.application.view then 
+			cobalt.application.view:clear(" ", cobalt.application.backColour, cobalt.application.foreColour ); 
+		end cobalt.draw(); 
+		if cobalt.application.view then 
+			cobalt.application.view:render() 
+		end 
+	end
+end
+
 function cobalt.initLoop( runOnce )
 	term.clear()
 	term.setCursorPos( 1, 1 )
@@ -349,29 +401,76 @@ function cobalt.initLoop( runOnce )
 			e, a, b, c, d, e = os.pullEvent()
 		end
 		if e == "char" then
-			if cobalt.textinput then	cobalt.textinput( a ) end
+			if cobalt.textinput then	
+				local ok, err = pcall(cobalt.textinput, a)
+				if not ok then
+					cerr( err )
+				end
+			end
 		elseif e == "key" then
-			cobalt._keypressed( a, keys.getName( a ) )
+			local ok, err = pcall(cobalt._keypressed, a, keys.getName( a ) )
+			if not ok then
+				cerr( err )
+			end
 		elseif e == "key_up" then
-			cobalt._keyreleased( a, keys.getName( a ) )
+			local ok, err = pcall(cobalt._keyreleased, a, keys.getName( a ) )
+			if not ok then
+				cerr( err )
+			end
 		elseif e == "mouse_click" then
-			if cobalt.mousepressed then cobalt.mousepressed( b, c, a ) end --b, c, a to keep love.mousepressed syntax as( x, y, button ), not ( button, x, y )
+			if cobalt.mousepressed then 
+				local ok, err = pcall(cobalt.mousepressed, b, c, a)
+				if not ok then
+					cerr( err )
+				end
+			end --b, c, a to keep love.mousepressed syntax as( x, y, button ), not ( button, x, y )
 		elseif e == "mouse_up" then
-			if cobalt.mousereleased then cobalt.mousereleased( b, c, a ) end
+			if cobalt.mousereleased then 
+				local ok, err = pcall(cobalt.mousereleased, b, c, a )
+				if not ok then
+					cerr( err )
+				end 
+			end
 		elseif e == "rednet_message" then
-			if cobalt.rednetreceive then cobalt.rednetreceive( a, b, c ) end
+			if cobalt.rednetreceive then 
+				local ok, err = pcall(cobalt.rednetreceive, a, b, c)
+				if not ok then
+					cerr( err )
+				end
+			end
 		elseif e == "monitor_touch" then
-			if cobalt.monitortouch then cobalt.monitortouch( x, y ) else cobalt.mousereleased( x, y ) end
+			if cobalt.monitortouch then 
+				local ok, err = pcall(cobalt.monitortouch, x, y)
+				if not ok then
+					cerr( err )
+				end
+			else 
+				local ok, err = pcall(cobalt.mousereleased, x, y )
+				if not ok then
+					cerr( err )
+				end
+			end
 		elseif e == "mouse_drag" then
-			if cobalt.mousedrag then cobalt.mousedrag( x, y ) end
+			if cobalt.mousedrag then 
+				local ok, err = pcall(cobalt.mousedrag, x, y )
+				if not ok then
+					cerr( err )
+				end
+			end
 		elseif e == "timer" then
 			if a == cobalt.updatetimer then
-				if cobalt.update then cobalt.update( cobalt.updatespeed ) end
-				cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
-				if cobalt.draw then if cobalt.application.view then cobalt.application.view:clear(" ", cobalt.application.backColour, cobalt.application.foreColour ); end cobalt.draw(); if cobalt.application.view then cobalt.application.view:render() end end
+				local ok, err = pcall( update )
+				if not ok then
+					cerr( err )
+				end
 			end
 		elseif e == "paste" then
-			if cobalt.paste then cobalt.paste(a) end
+			if cobalt.paste then 
+				local ok, err = pcall(cobalt.paste, a)
+				if not ok then
+					cerr( err )
+				end
+			end
 		end
 
 

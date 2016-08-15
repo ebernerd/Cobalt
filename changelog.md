@@ -1,49 +1,25 @@
 # Changelog
-This is a list of all the changes made in Cobalt `1.1_0`.
+This is a list of all the changes made in Cobalt `1.1_2`.
 
 ## Additions
 ### Cobalt
-+ Ported to Surface. This eliminates any screen flicker and tearing.
-+ `cobalt.mouse`
-  + `.isDown(button)` - returns if `button` is currently being pressed
++ Error handling. You can see an example [here](http://i.imgur.com/82mJYaT.gif)
 ### Cobalt UI
-+ `Textareas` - multiline inputs
-+ Inputs now have a `tabIndex` attribute. If not set, it defaults to the highest tab index of inputs in the parent container that share the same `state`.
-+ Inputs now can be scrolled through with arrow keys, and have a full sized cursor.
++ None
 
 ## Modifications
 ### Cobalt
-+ `cobalt.graphics.center` now wraps text to the width of the screen. No need for manually typing in `\n` anymore.
-+ `cobalt.graphics` calls now are wrapped to draw to the main Cobalt surface, `cobalt.application.view`
-+ `cobalt.keyboard.isDown(key)`, if `key` is left empty, will return true or false if _any_ key is down.
-
++ `cobalt.graphics.center( text, y, offset, backColour, colour )` - syntax changed to `( text, y, offset, lim, backColour, colour)`. `lim` is a limit, so you can set an offset and a limit to change where the centering is allowed to happen.
 ### Cobalt UI
-+ `:setMargins(top, right, bottom, left)` is now `:setMargins(top, left)`, as bottom and right margins were never used.
-
++ None
 ## Removals
 ### Cobalt
-+ `cobalt.graphics.centerInArea()`
-
++ None
 ### Cobalt UI
-+ Bottom and right margins. They were pretty useless.
-
++ None
 
 ## Bug Fixes
 ### Cobalt
-+ Fixed a few (actually, many) rounding issues
-
++ Version checking printed the incorrect version number.
 ### Cobalt UI
-+ Fixed percentage issues (using percentages with single digits, like `5%` or `05%`, or using `100%` no longer return incorrect values)
-+ Percentages are now more precise, as they are in fraction form rather than rounded decimal form
-+ Percentages for the `x` and `y` value are now calculated using the same method as the `marginleft` and `margintop` attributes
-
-## Features for v1.2
-### Cobalt
-+ Unknown
-
-### Cobalt-UI
-+ Canvases (paint areas)
-+ Colour Selectors
-+ Tab Controls
-+ Sliders
-+ Images
++ Fixed Textareas not allowing percentages for the `h` attribute.
