@@ -19,18 +19,22 @@ cobalt = {
 	table = { },
 	state = "Main",
 	version = "1.1_3",
-	updatespeed = 0.1
+	updatespeed = 0.1,
 }
 
 cobalt.surface = dofile( "cobalt-lib/surface" )
 
 cobalt.updatetimer = os.startTimer( cobalt.updatespeed )
-
+local callbacks = { }
 function cobalt.debug( item )
 	local f = fs.open( ".cobaltdebug", "w" )
 	f.write(item)
 	f.close()
 	cobalt.exit()
+end
+
+function cobalt.newCallback( event, func )
+	callbacks[event] = func
 end
 
 
@@ -209,6 +213,15 @@ function cobalt.graphics.darken( colour )
 end
 
 
+function cobalt.graphics.clear()
+	return cobalt.application.view:clear()
+end
+
+function cobalt.graphics.reset()
+	cobalt.application.view = nil
+	cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", cobalt.application.backColour, cobalt.application.foreColour )
+end
+
 --[=[WINDOW FUNCTIONS]=]--
 function cobalt.window.getWidth()
 	local x, _ = term.getSize()
@@ -352,22 +365,48 @@ end
 
 local function cerr( reason )
 
-	cobalt.application.view = nil
-	cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", colours.blue, colours.white )
-	cobalt.graphics.center( "Cobalt Error Report", 2 )
-	cobalt.graphics.center( "Your program has encountered an error, which has been traced back to:", 4, 0, 40 )
-	cobalt.graphics.center( reason or "No further information", 8, 0, 40, nil, colours.yellow )
-	local saveLoc = ".err-logs/" .. os.day() .. "-" .. os.time()
-	local f = fs.open( saveLoc, "w" )
-	f.write( reason or "No further information" )
-	f.close()
-	cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
-	cobalt.application.view:render()
-	sleep( 0.5 )
-	cobalt.graphics.center( "Press any key to exit.", cobalt.window.getHeight()-1 )
-	cobalt.application.view:render()
-	os.pullEvent( "key_up" )
-	cobalt.exit()
+
+	if cobalt.onError then
+		local ok, err2 = pcall(cobalt.onError, reason)
+		if not ok then
+			cobalt.application.view = nil
+			cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", colours.blue, colours.white )
+			cobalt.graphics.center( "Cobalt Error Report", 2 )
+			cobalt.graphics.center( "Your error handler errored. Nice job. Here's why:", 4, 0, 40 )
+			cobalt.graphics.center( err2 or "No further information", 8, 0, 40, nil, colours.yellow )
+			local saveLoc = ".err-logs/" .. os.day() .. "-" .. os.time()
+			local f = fs.open( saveLoc, "w" )
+			local saveStr = "err-handler-exception: " .. err2 .. "\nprogram-exception: " .. reason
+			f.write( saveStr or "No further information" )
+			f.close()
+			cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+			cobalt.application.view:render()
+			sleep( 0.5 )
+			cobalt.graphics.center( "Press any key to exit.", cobalt.window.getHeight()-1 )
+			cobalt.application.view:render()
+			os.pullEvent( "key_up" )
+			cobalt.exit()
+		end
+	else
+		cobalt.application.view = nil
+		cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", colours.blue, colours.white )
+		cobalt.graphics.center( "Cobalt Error Report", 2 )
+		cobalt.graphics.center( "Your program has encountered an error, which has been traced back to:", 4, 0, 40 )
+		cobalt.graphics.center( reason or "No further information", 8, 0, 40, nil, colours.yellow )
+		local saveLoc = ".err-logs/" .. os.day() .. "-" .. os.time()
+		local f = fs.open( saveLoc, "w" )
+		f.write( reason or "No further information" )
+		f.close()
+		cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+		cobalt.application.view:render()
+		sleep( 0.5 )
+		cobalt.graphics.center( "Press any key to exit.", cobalt.window.getHeight()-1 )
+		cobalt.application.view:render()
+		os.pullEvent( "key_up" )
+		cobalt.exit()
+	end
+	cobalt.halt()
+	
 end
 
 local function update()
@@ -391,7 +430,7 @@ end
 function cobalt.initLoop( runOnce )
 	term.clear()
 	term.setCursorPos( 1, 1 )
-	cobalt.application.view = cobalt.surface.create( cobalt.window.getWidth(), cobalt.window.getHeight(), " ", cobalt.application.backColour, cobalt.application.foreColour )
+	cobalt.graphics.reset()
 	while cobalt._mainloop do
 
 		local e, a, b, c, d, e
@@ -399,6 +438,18 @@ function cobalt.initLoop( runOnce )
 			e, a, b, c, d, e = os.pullEventRaw()
 		else
 			e, a, b, c, d, e = os.pullEvent()
+		end
+		if cobalt.on then
+			local ok, err = pcall(cobalt.on, e, a, b, c, d, e)
+			if not ok then
+				cerr( err )
+			end
+		end
+		if callbacks[event] then
+			local ok, err = pcall(callbacks[event], a, b, c, d, e )
+			if not ok then
+				cerr( err )
+			end
 		end
 		if e == "char" then
 			if cobalt.textinput then	

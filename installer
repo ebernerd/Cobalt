@@ -78,7 +78,7 @@ if beta then
 else
 	term.setTextColour( colours.white )
 	clear( colours.grey )
-	centerPrint( "Downloading Cobalt v1.1_0" )
+	centerPrint( "Downloading Cobalt v1.1_3" )
 	sleep(0.5)
 	getFile( "cobalt", "cobalt" )
 	getFile( "cobalt-lib/surface", "cobalt-lib/surface" )
