@@ -1,25 +1,10 @@
-# Changelog
-This is a list of all the changes made in Cobalt `1.1_2`.
+# Cobalt Release Notes
 
-## Additions
-### Cobalt
-+ Error handling. You can see an example [here](http://i.imgur.com/82mJYaT.gif)
-### Cobalt UI
-+ None
+### Smile! Images are here!
+You can now create images using `parent:add("image",{})`. A required parameter is `img`, which is the path to the `.nfp` file.
+### Die! Die!
+`cobalt.die( info )` to forcably cause an error in Cobalt
 
-## Modifications
-### Cobalt
-+ `cobalt.graphics.center( text, y, offset, backColour, colour )` - syntax changed to `( text, y, offset, lim, backColour, colour)`. `lim` is a limit, so you can set an offset and a limit to change where the centering is allowed to happen.
-### Cobalt UI
-+ None
-## Removals
-### Cobalt
-+ None
-### Cobalt UI
-+ None
+### Report!
+Crash reports now are better formatted and tell you the most recent event that was recalled.
 
-## Bug Fixes
-### Cobalt
-+ Version checking printed the incorrect version number.
-### Cobalt UI
-+ Fixed Textareas not allowing percentages for the `h` attribute.
