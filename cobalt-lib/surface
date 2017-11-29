@@ -938,6 +938,8 @@ function surface.create(width, height, char, backcolor, textcolor)
 	return surf
 end
 
+local create = surface.create -- To fix the bug on line 1004 (previously line 1002 before this change)
+
 function surface.load(path)
 	local lines, f = { }, fs.open(path, "r")
 	for line in f.readLine do
