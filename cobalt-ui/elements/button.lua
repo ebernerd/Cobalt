@@ -16,6 +16,7 @@ local button = {
 	autow = "perc:50",
 	wrap = "left",
 	autoh = true,
+	enabled = true,
 }
 button.__index = button
 
@@ -156,7 +157,7 @@ function button:draw()
 end
 
 function button:mousepressed( x, y, button )
-	if self.state == cobalt.state or self.state == "_ALL" and self.visible then
+	if (self.state == cobalt.state or self.state == "_ALL") and self.visible and self.enabled then
 		if button == 1 then
 			local h = self.h
 			if self.h == 1 then h = 0 end
