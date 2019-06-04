@@ -377,9 +377,13 @@ local function cerr( reason )
 			local saveLoc = ".err-logs/" .. os.day() .. "-" .. os.time()
 			local f = fs.open( saveLoc, "w" )
 			local saveStr = "err-handler-exception: " .. err2 .. "\nprogram-exception: " .. reason
-			f.write( saveStr or "No further information" )
-			f.close()
-			cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+			if f then
+				f.write( saveStr or "No further information" )
+				f.close()
+				cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+			else
+				cobalt.graphics.center( "This error could not be logged due to lack of hard disk space.", 12, 0, 40 )
+			end
 			cobalt.application.view:render()
 			sleep( 0.5 )
 			cobalt.graphics.center( "Press any key to exit.", cobalt.window.getHeight()-1 )
@@ -395,9 +399,13 @@ local function cerr( reason )
 		cobalt.graphics.center( reason or "No further information", 8, 0, 40, nil, colours.yellow )
 		local saveLoc = ".err-logs/" .. os.day() .. "-" .. os.time()
 		local f = fs.open( saveLoc, "w" )
-		f.write( reason or "No further information" )
-		f.close()
-		cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+		if f then
+			f.write( reason or "No further information" )
+			f.close()
+			cobalt.graphics.center( "This error has been saved to \""..saveLoc.."\" for future use.", 12, 0, 40 )
+		else
+			cobalt.graphics.center( "This error could not be logged due to lack of hard disk space.", 12, 0, 40 )
+		end
 		cobalt.application.view:render()
 		sleep( 0.5 )
 		cobalt.graphics.center( "Press any key to exit.", cobalt.window.getHeight()-1 )
