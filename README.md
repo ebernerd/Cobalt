@@ -1,4 +1,5 @@
 # Cobalt - ComputerCraft called you back.  
+## Cobalt 2 has been released and therefore this project is no longer supported. [View Cobalt 2 here](https://github.com/ebernerd/cobalt-2).  
 **Before you dive in, it is *very* much recommended that you read the [documentation](https://github.com/ebernerd/Cobalt/wiki). This will give you a lot of help!**
 
 Install Cobalt by running `pastebin run h5h4fm3t` in your computer's shell.
@@ -38,7 +39,6 @@ function cobalt.keypressed( keycode, key )
 end
 
 function cobalt.keyreleased( keycode, key )
-
 end
 
 function cobalt.textinput( t )
